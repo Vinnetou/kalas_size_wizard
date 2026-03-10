@@ -347,6 +347,61 @@
 
     /* ---- hidden ---- */
     .hidden { display: none !important; }
+
+    /* ---- responsive ---- */
+    @media (max-width: 720px) {
+      body {
+        padding: 20px 10px;
+      }
+      .card-header,
+      .card-body,
+      .card-logo {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .inputs-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .chips label {
+        font-size: 0.84rem;
+        padding: 7px 10px;
+      }
+      .input-field label {
+        font-size: 0.76rem;
+      }
+      .input-field input {
+        font-size: 0.92rem;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .card-header h1 {
+        font-size: 1.2rem;
+      }
+      .card-header p {
+        font-size: 0.8rem;
+      }
+      .input-badge {
+        left: 10px;
+        font-size: 0.62rem;
+        letter-spacing: 0.28px;
+      }
+      .unit-suffix {
+        right: 10px;
+        font-size: 0.7rem;
+      }
+      .input-field input {
+        padding-left: 74px;
+        padding-right: 40px;
+      }
+      .input-wrap.optional input {
+        padding-left: 74px;
+      }
+      button[type="submit"] {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
 <body>
