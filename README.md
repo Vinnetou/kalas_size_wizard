@@ -214,6 +214,35 @@ getSize({ gender: 'men', type: 'shoe_covers', shoeSize: 42 });
 
 ## Development
 
+### Run locally (interactive demo)
+
+```bash
+# 1) Install dependencies (first time)
+npm ci
+
+# 2) Build dist/ from TypeScript sources
+npm run build
+
+# 3) Start local static server
+npm run serve
+```
+
+Then open:
+
+- `http://localhost:3000/demo.html`
+
+Notes:
+
+- After changes in `src/`, run `npm run build` again and refresh the browser.
+- If port 3000 is in use, use the different URL printed by the server.
+- Use `Ctrl+C` to stop the local server.
+
+Quick terminal-only check:
+
+```bash
+npm run demo
+```
+
 ```bash
 npm run build   # compile TypeScript → dist/
 npm test        # run Jest test suite

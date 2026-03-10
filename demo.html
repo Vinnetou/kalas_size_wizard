@@ -115,6 +115,36 @@
       color: #a1a1aa;
       margin-top: -3px;
     }
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-badge {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.45px;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      color: #a1a1aa;
+    }
+    .input-wrap.required .input-badge { color: #d40000; }
+    .input-wrap.has-value .input-badge { opacity: 0; }
+    .unit-suffix {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #71717a;
+      pointer-events: none;
+    }
     .input-field input {
       padding: 9px 12px;
       border: 1.5px solid #d4d4d8;
@@ -124,17 +154,19 @@
       outline: none;
       transition: border-color 0.15s;
       width: 100%;
+      padding-left: 84px;
+      padding-right: 46px;
+    }
+    .input-field input::placeholder { color: #b5b5bf; }
+    .input-wrap.required input {
+      border-color: #d40000;
+      background: #fff9f9;
     }
     .input-field input:focus { border-color: #d40000; }
-    .input-field input.optional { background: #fafafa; }
-    .required-badge {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #d40000;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .input-wrap.optional input {
+      background: #fafafa;
+      padding-left: 88px;
     }
-    .label-row { display: flex; align-items: center; justify-content: space-between; }
 
     /* ---- extended fit toggle ---- */
     #extended-wrap {
@@ -501,25 +533,35 @@ function renderInputs() {
   keys.forEach(key => {
     const def    = FIELDS[key];
     const inputKey = key === "height_required" ? "height" : key;
+    const isRequired = def.required;
     grid.innerHTML += `
       <div class="input-field">
-        <div class="label-row">
-          <label for="m-${inputKey}">${def.label} (${def.unit})</label>
-          ${def.required
-            ? '<span class="required-badge">povinné</span>'
-            : '<span style="font-size:0.72rem;color:#a1a1aa">volitelné</span>'}
+        <label for="m-${inputKey}">${def.label}</label>
+        <div class="input-wrap ${isRequired ? "required" : "optional"}">
+          <span class="input-badge">${isRequired ? "Povinné" : "Volitelné"}</span>
+          <input
+            type="number"
+            id="m-${inputKey}"
+            name="${inputKey}"
+            min="1"
+            step="${def.step ?? 0.1}"
+            placeholder="${getPlaceholder(key, gender)}"
+            ${def.required ? "required" : ""}
+          />
+          <span class="unit-suffix">${def.unit}</span>
         </div>
-        <input
-          type="number"
-          id="m-${inputKey}"
-          name="${inputKey}"
-          min="1"
-          step="${def.step ?? 0.1}"
-          placeholder="${getPlaceholder(key, gender)}"
-          ${def.required ? "required" : ""}
-          class="${def.required ? "" : "optional"}"
-        />
       </div>`;
+  });
+
+  // Hide "Povinne/Volitelne" badge once user starts typing.
+  grid.querySelectorAll(".input-wrap").forEach(wrap => {
+    const input = wrap.querySelector("input");
+    const sync = () => {
+      wrap.classList.toggle("has-value", input.value.trim() !== "");
+    };
+    sync();
+    input.addEventListener("input", sync);
+    input.addEventListener("change", sync);
   });
 
   // clear result when inputs change
