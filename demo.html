@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulačka velikosti</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f4f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+      width: 100%;
+      max-width: 520px;
+      overflow: hidden;
+    }
+
+    .card-logo {
+      background: #fff;
+      padding: 14px 28px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .card-logo img {
+      height: 38px;
+      width: auto;
+      display: block;
+    }
+
+    .card-header {
+      background: #d40000;
+      color: #fff;
+      padding: 24px 28px 20px;
+    }
+    .card-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .card-header p {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .card-body { padding: 28px; }
+
+    /* ---- chip group ---- */
+    .field { margin-bottom: 22px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #52525b;
+      margin-bottom: 8px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chips input[type="radio"] { display: none; }
+    .chips label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1.5px solid #d4d4d8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #3f3f46;
+      text-transform: none;
+      letter-spacing: 0;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .chips label:hover { border-color: #d40000; color: #d40000; }
+    .chips input[type="radio"]:checked + label {
+      border-color: #d40000;
+      background: #d40000;
+      color: #fff;
+    }
+
+    /* ---- text inputs ---- */
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .input-field { display: flex; flex-direction: column; gap: 5px; }
+    .input-field label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #52525b;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .input-field .hint {
+      font-size: 0.72rem;
+      color: #a1a1aa;
+      margin-top: -3px;
+    }
+    .input-field input {
+      padding: 9px 12px;
+      border: 1.5px solid #d4d4d8;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      color: #18181b;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .input-field input:focus { border-color: #d40000; }
+    .input-field input.optional { background: #fafafa; }
+    .required-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #d40000;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .label-row { display: flex; align-items: center; justify-content: space-between; }
+
+    /* ---- extended fit toggle ---- */
+    #extended-wrap {
+      display: none;
+      margin-top: -10px;
+      margin-bottom: 22px;
+    }
+    #extended-wrap label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: #3f3f46;
+    }
+    #extended-wrap input[type="checkbox"] { width: 16px; height: 16px; accent-color: #d40000; }
+    #extended-wrap .ext-desc {
+      font-size: 0.78rem;
+      color: #71717a;
+      margin-top: 2px;
+    }
+
+    /* ---- sleeve info ---- */
+    #sleeve-info {
+      display: none;
+      background: #f4f4f5;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.83rem;
+      color: #52525b;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    /* ---- button ---- */
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: #d40000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+    button[type="submit"]:hover { background: #b00000; }
+    button[type="submit"]:disabled { background: #d4d4d8; cursor: not-allowed; }
+
+    /* ---- result ---- */
+    #result {
+      display: none;
+      margin-top: 24px;
+      border-radius: 10px;
+      padding: 20px 22px;
+      border: 2px solid #d40000;
+      background: #fff8f8;
+    }
+    #result .result-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #d40000;
+    }
+    #result .size-value {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #18181b;
+      line-height: 1.1;
+      margin: 4px 0 8px;
+    }
+    #result .border-badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    #result .result-note {
+      font-size: 0.85rem;
+      color: #52525b;
+      line-height: 1.5;
+    }
+    #result.error { border-color: #ef4444; background: #fef2f2; }
+    #result.error .result-label { color: #ef4444; }
+    #result.error .size-value { font-size: 1rem; color: #b91c1c; }
+
+    /* ---- out-of-range warning ---- */
+    .out-of-range-warn {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .out-of-range-warn::before { content: "⚠"; flex-shrink: 0; }
+
+    /* ---- proximity viz ---- */
+    .viz-wrap {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #fde8e8;
+    }
+    .viz-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #71717a;
+      margin-bottom: 8px;
+    }
+    .viz-bar-outer {
+      position: relative;
+      margin-bottom: 26px;
+    }
+    .viz-bar {
+      display: flex;
+      height: 30px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .viz-seg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #a1a1aa;
+      background: #f4f4f5;
+      border-right: 1px solid #e4e4e7;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .viz-seg:last-child { border-right: none; }
+    .viz-seg.chosen   { background: #d40000; color: #fff; }
+    .viz-seg.neighbor { background: #fde8e8; color: #b00000; }
+    .viz-marker {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 30px;
+      margin-left: -1px;
+      background: #18181b;
+      pointer-events: none;
+    }
+    .viz-marker::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #18181b;
+      white-space: nowrap;
+    }
+    .viz-marker.outside { background: #ef4444; }
+    .viz-marker.outside::after { color: #ef4444; }
+    .viz-range-note {
+      font-size: 0.75rem;
+      color: #71717a;
+      margin-top: 2px;
+    }
+
+    /* ---- hidden ---- */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="card-logo">
+    <img src="./kalas_logo.png" alt="Kalas" />
+  </div>
+  <div class="card-header">
+    <h1>Kalkulačka velikosti</h1>
+    <p>Zadejte své míry pro zjištění správné velikosti</p>
+  </div>
+  <div class="card-body">
+    <form id="wizard" novalidate>
+
+      <!-- CLOTHING TYPE -->
+      <div class="field">
+        <label>Co hledáte?</label>
+        <div class="chips" id="type-chips">
+          <input type="radio" name="type" id="t-top"         value="top"         checked />
+          <label for="t-top">Dres / Bunda / Vesta</label>
+
+          <input type="radio" name="type" id="t-bottom"      value="bottom"      />
+          <label for="t-bottom">Kraťasy / Lacláče</label>
+
+          <input type="radio" name="type" id="t-gloves"      value="gloves"      />
+          <label for="t-gloves">Rukavice</label>
+
+          <input type="radio" name="type" id="t-shoes"       value="shoe_covers" />
+          <label for="t-shoes">Návleky na boty / Ponožky</label>
+
+          <input type="radio" name="type" id="t-sleeves"     value="sleeves"     />
+          <label for="t-sleeves">Návleky na paže / kolena / nohy</label>
+        </div>
+      </div>
+
+      <!-- GENDER -->
+      <div class="field" id="gender-field">
+        <label>Pro koho?</label>
+        <div class="chips">
+          <input type="radio" name="gender" id="g-men"      value="men"      checked />
+          <label for="g-men">Muži</label>
+
+          <input type="radio" name="gender" id="g-women"    value="women"    />
+          <label for="g-women">Ženy</label>
+
+          <input type="radio" name="gender" id="g-children" value="children" />
+          <label for="g-children">Děti</label>
+        </div>
+      </div>
+
+      <!-- EXTENDED FIT (men only) -->
+      <div id="extended-wrap">
+        <label>
+          <input type="checkbox" id="extended-fit" />
+          <span>
+            Prodloužené velikosti<br/>
+            <span class="ext-desc">Vyšší postava — stejné míry hrudníku/pasu jako u velikostí 1–4, ale delší trup/nohy</span>
+          </span>
+        </label>
+      </div>
+
+      <!-- SLEEVE INFO -->
+      <div id="sleeve-info">
+        <strong>Návleky na paže / ruce</strong> — stejná velikost jako váš dres/bunda. Použijte tabulku pro horní část.<br/>
+        <strong>Návleky na kolena / nohy</strong> — stejná velikost jako vaše kraťasy/lacláče. Použijte tabulku pro spodní část.
+      </div>
+
+      <!-- MEASUREMENTS -->
+      <div class="field" id="measurements-field">
+        <label>Vaše míry</label>
+        <div class="inputs-grid" id="inputs-grid">
+          <!-- injected by JS -->
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn">Zjistit velikost</button>
+    </form>
+
+    <!-- RESULT -->
+    <div id="result">
+      <div class="result-label">Doporučená velikost</div>
+      <div class="size-value" id="result-size"></div>
+      <div class="border-badge hidden" id="border-badge">Na hranici dvou velikostí — doporučujeme větší</div>
+      <div class="out-of-range-warn hidden" id="out-of-range-warn"></div>
+      <div class="result-note" id="result-note"></div>
+      <div id="viz-container" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { getSize } from "./dist/index.js";
+
+// ---- field definitions ---------------------------------------------------
+
+const FIELDS = {
+  chest:             { label: "Obvod hrudníku",  unit: "cm", required: true  },
+  hips:              { label: "Obvod boků",       unit: "cm", required: true  },
+  waist:             { label: "Obvod pasu",       unit: "cm", required: true  },
+  height:            { label: "Výška",            unit: "cm", required: false },
+  height_required:   { label: "Výška",            unit: "cm", required: true  },
+  handCircumference: { label: "Obvod ruky",       unit: "cm", required: true  },
+  shoeSize:          { label: "Velikost boty",    unit: "EU", required: true, step: 0.5 },
+};
+
+// Which input fields to show for each [gender][type] combination.
+// "height_required" means height is the primary key, not optional.
+const SCHEMA = {
+  men: {
+    top:    ["chest", "height"],
+    bottom: ["hips",  "height"],
+  },
+  women: {
+    top:    ["chest", "height"],
+    bottom: ["hips",  "height"],
+  },
+  children: {
+    top:    ["height_required", "chest"],
+    bottom: ["waist"],
+  },
+  // gloves and shoe_covers are the same regardless of gender
+  gloves:      ["handCircumference"],
+  shoe_covers: ["shoeSize"],
+};
+
+// ---- DOM refs -------------------------------------------------------------
+const form        = document.getElementById("wizard");
+const grid        = document.getElementById("inputs-grid");
+const resultBox   = document.getElementById("result");
+const resultSize  = document.getElementById("result-size");
+const borderBadge = document.getElementById("border-badge");
+const resultNote  = document.getElementById("result-note");
+const extWrap     = document.getElementById("extended-wrap");
+const extCheck    = document.getElementById("extended-fit");
+const sleeveInfo  = document.getElementById("sleeve-info");
+const measField   = document.getElementById("measurements-field");
+
+// ---- helpers -------------------------------------------------------------
+
+// Midpoint of the full measurement range for each field × gender,
+// used as the input placeholder so the example value is meaningful.
+const PLACEHOLDER_VALS = {
+  chest:             { men: 106, women: 100, children: 67  },
+  hips:              { men: 107, women: 102               },
+  waist:             {                       children: 61  },
+  height:            { men: 180, women: 170, children: 133 },
+  height_required:   { men: 180, women: 170, children: 133 },
+  handCircumference: { men: 18,  women: 18,  children: 18  },
+  shoeSize:          { men: 42,  women: 42,  children: 42  },
+};
+
+function getPlaceholder(key, gender) {
+  const g = PLACEHOLDER_VALS[key];
+  return String(g?.[gender] ?? g?.men ?? 80);
+}
+
+function getVal(name) {
+  const el = document.querySelector(`[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+
+function getFieldKeys() {
+  const type   = getVal("type");
+  const gender = getVal("gender");
+
+  if (type === "gloves")      return SCHEMA.gloves;
+  if (type === "shoe_covers") return SCHEMA.shoe_covers;
+  if (type === "sleeves")     return [];
+
+  const genderSchema = SCHEMA[gender];
+  if (!genderSchema) return [];
+  return genderSchema[type] ?? [];
+}
+
+function renderInputs() {
+  const keys   = getFieldKeys();
+  const type   = getVal("type");
+  const gender = getVal("gender");
+
+  sleeveInfo.style.display  = type === "sleeves" ? "block" : "none";
+  measField.style.display   = (type === "sleeves" || keys.length === 0) ? "none" : "block";
+
+  grid.innerHTML = "";
+  keys.forEach(key => {
+    const def    = FIELDS[key];
+    const inputKey = key === "height_required" ? "height" : key;
+    grid.innerHTML += `
+      <div class="input-field">
+        <div class="label-row">
+          <label for="m-${inputKey}">${def.label} (${def.unit})</label>
+          ${def.required
+            ? '<span class="required-badge">povinné</span>'
+            : '<span style="font-size:0.72rem;color:#a1a1aa">volitelné</span>'}
+        </div>
+        <input
+          type="number"
+          id="m-${inputKey}"
+          name="${inputKey}"
+          min="1"
+          step="${def.step ?? 0.1}"
+          placeholder="${getPlaceholder(key, gender)}"
+          ${def.required ? "required" : ""}
+          class="${def.required ? "" : "optional"}"
+        />
+      </div>`;
+  });
+
+  // clear result when inputs change
+  resultBox.style.display = "none";
+}
+
+function toggleExtended() {
+  const gender = getVal("gender");
+  const type   = getVal("type");
+  const show   = gender === "men" && (type === "top" || type === "bottom");
+  extWrap.style.display = show ? "block" : "none";
+  if (!show) extCheck.checked = false;
+}
+
+// ---- event listeners -----------------------------------------------------
+
+document.querySelectorAll('[name="type"], [name="gender"]').forEach(el => {
+  el.addEventListener("change", () => {
+    renderInputs();
+    toggleExtended();
+  });
+});
+
+// ---- note translation ----------------------------------------------------
+
+const MEAS_CS = {
+  chest:  "obvod hrudníku",
+  hips:   "obvod boků",
+  waist:  "obvod pasu",
+  height: "výška",
+};
+const GARMENT_CS = { top: "horního oblečení", bottom: "spodního oblečení" };
+
+function translateNote(note) {
+  let m;
+
+  // "Recommended top/bottom size based on <meas>."
+  m = note.match(/^Recommended (top|bottom) size based on (\w+)\.$/);
+  if (m) {
+    const g = GARMENT_CS[m[1]] || m[1];
+    const meas = MEAS_CS[m[2]] || m[2];
+    return `Doporučená velikost ${g} na základě: ${meas}.`;
+  }
+
+  // "Recommended glove size based on hand circumference X cm."
+  m = note.match(/^Recommended glove size based on hand circumference ([\d.]+) cm\.$/);
+  if (m) return `Doporučená velikost rukavic na základě obvodu ruky ${m[1]} cm.`;
+
+  // "Recommended shoe cover / sock size for EU shoe size X."
+  m = note.match(/^Recommended shoe cover \/ sock size for EU shoe size ([\d.]+)\.$/);
+  if (m) return `Doporučená velikost návleků / ponožek pro velikost boty EU ${m[1]}.`;
+
+  // "Your <meas> measurement is smaller than our smallest size. Size X is the closest available."
+  m = note.match(/^Your (\w+) measurement is smaller than our smallest size\. Size (.+) is the closest available\.$/);
+  if (m) {
+    const meas = MEAS_CS[m[1]] || m[1];
+    return `Vaše míra (${meas}) je menší než nejmenší dostupná velikost. Nejbližší velikost: ${m[2]}.`;
+  }
+
+  // "Your <meas> measurement is larger than our largest size. Size X is the closest available."
+  m = note.match(/^Your (\w+) measurement is larger than our largest size\. Size (.+) is the closest available\.$/);
+  if (m) {
+    const meas = MEAS_CS[m[1]] || m[1];
+    return `Vaše míra (${meas}) je větší než největší dostupná velikost. Nejbližší velikost: ${m[2]}.`;
+  }
+
+  // "Your <meas> measurement falls exactly on the border between two sizes. The larger size X is recommended."
+  m = note.match(/^Your (\w+) measurement falls exactly on the border between two sizes\. The larger size (.+) is recommended\.$/);
+  if (m) {
+    const meas = MEAS_CS[m[1]] || m[1];
+    return `Vaše míra (${meas}) leží přesně na hranici dvou velikostí. Doporučujeme větší velikost ${m[2]}.`;
+  }
+
+  // "Hand circumference X cm is outside the standard range. Nearest size: Y."
+  m = note.match(/^Hand circumference ([\d.]+) cm is outside the standard range\. Nearest size: (.+)\.$/);
+  if (m) return `Obvod ruky ${m[1]} cm je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
+
+  // "EU shoe size X is outside the standard range. Nearest size: Y."
+  m = note.match(/^EU shoe size ([\d.]+) is outside the standard range\. Nearest size: (.+)\.$/);
+  if (m) return `Velikost boty EU ${m[1]} je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
+
+  return note; // fallback: return as-is
+}
+
+// ---- proximity visualization ---------------------------------------------
+
+const VIZ = {
+  men_std: {
+    chest: [{s:'1',a:84,b:88},{s:'2',a:88,b:92},{s:'3',a:92,b:96},{s:'4',a:96,b:100},{s:'5',a:100,b:104},{s:'6',a:104,b:112},{s:'7',a:112,b:120},{s:'8',a:120,b:128}],
+    hips:  [{s:'1',a:85,b:89},{s:'2',a:89,b:93},{s:'3',a:93,b:97},{s:'4',a:97,b:101},{s:'5',a:101,b:105},{s:'6',a:105,b:113},{s:'7',a:113,b:121},{s:'8',a:121,b:129}],
+  },
+  men_ext: {
+    chest: [{s:'1+',a:84,b:88},{s:'2+',a:88,b:92},{s:'3+',a:92,b:96},{s:'4+',a:96,b:100}],
+    hips:  [{s:'1+',a:85,b:89},{s:'2+',a:89,b:93},{s:'3+',a:93,b:97},{s:'4+',a:97,b:101}],
+  },
+  women: {
+    chest: [{s:'1',a:85,b:86},{s:'2',a:86,b:90},{s:'3',a:90,b:94},{s:'4',a:94,b:98},{s:'5',a:98,b:106},{s:'6',a:106,b:114}],
+    hips:  [{s:'1',a:86,b:90},{s:'2',a:90,b:94},{s:'3',a:94,b:98},{s:'4',a:98,b:102},{s:'5',a:102,b:110},{s:'6',a:110,b:118}],
+  },
+  children: {
+    height: [{s:'110',a:104,b:116},{s:'122',a:116,b:128},{s:'134',a:128,b:140},{s:'146',a:140,b:152},{s:'158',a:152,b:161}],
+    waist:  [{s:'110',a:53,b:55},{s:'122',a:55,b:57},{s:'134',a:57,b:61},{s:'146',a:61,b:65},{s:'158',a:65,b:69}],
+    chest:  [{s:'110',a:56,b:60},{s:'122',a:60,b:64},{s:'134',a:64,b:68},{s:'146',a:68,b:72},{s:'158',a:72,b:78}],
+  },
+  gloves:      [{s:'4',a:0,b:12},{s:'5',a:12,b:14.5},{s:'6',a:13.5,b:16.2},{s:'7',a:16.2,b:18.9},{s:'8',a:18.9,b:21.6},{s:'9',a:21.6,b:24.3},{s:'10',a:24.3,b:27}],
+  shoe_covers: [{s:'35-36',a:35,b:36},{s:'37-39',a:37,b:39},{s:'40-42',a:40,b:42},{s:'43-45',a:43,b:45},{s:'46-48',a:46,b:48}],
+};
+
+function getVizConfigs(input) {
+  const { gender, type, menFit = 'standard' } = input;
+  if (type === 'gloves')      return [{ rows: VIZ.gloves,      value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
+  if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: 'Velikost boty' }];
+  const tbl = gender === 'children'                    ? VIZ.children
+            : gender === 'men' && menFit === 'extended' ? VIZ.men_ext
+            : gender === 'men'                          ? VIZ.men_std
+            : VIZ.women;
+  if (gender === 'children') {
+    if (type === 'top') {
+      // Show bars for both height and chest when both are provided
+      const configs = [];
+      if (input.height) configs.push({ rows: tbl.height, value: input.height, unit: 'cm', label: 'Výška' });
+      if (input.chest)  configs.push({ rows: tbl.chest,  value: input.chest,  unit: 'cm', label: 'Obvod hrudníku' });
+      return configs.length ? configs : [{ rows: tbl.height, value: input.height ?? input.chest, unit: 'cm', label: 'Výška' }];
+    }
+    return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: 'Obvod pasu' }];
+  }
+  if (type === 'top') return [{ rows: tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku' }];
+  return                     [{ rows: tbl.hips,  value: input.hips,  unit: 'cm', label: 'Obvod boků' }];
+}
+
+function buildVizHtml(rows, value, chosenSize, unit, label) {
+  if (!value || !rows) return '';
+  const totalMin  = rows[0].a;
+  const totalMax  = rows[rows.length - 1].b;
+  const totalSpan = rows.reduce((s, r) => s + (r.b - r.a), 0); // sum of segment widths only
+  const outside   = value < totalMin || value > totalMax;
+  const clamped   = Math.max(totalMin, Math.min(totalMax, value));
+  const chosenIdx = rows.findIndex(r => r.s === chosenSize);
+
+  // Cumulative visual start (in flex units) for each segment
+  const cumStarts = [];
+  let cum = 0;
+  for (const r of rows) { cumStarts.push(cum); cum += (r.b - r.a); }
+
+  // Marker position: find which segment contains the clamped value
+  let markerFlexPct = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (clamped >= r.a && clamped <= r.b) {
+      const withinSeg = (r.b - r.a) > 0 ? (clamped - r.a) / (r.b - r.a) : 0;
+      markerFlexPct = (cumStarts[i] + withinSeg * (r.b - r.a)) / totalSpan * 100;
+      break;
+    }
+    // Value is in a gap between this segment and the next: snap to next segment start
+    if (i < rows.length - 1 && clamped > r.b && clamped < rows[i + 1].a) {
+      markerFlexPct = cumStarts[i + 1] / totalSpan * 100;
+      break;
+    }
+  }
+  const markerPct = markerFlexPct.toFixed(2);
+
+  let segs = '';
+  for (let i = 0; i < rows.length; i++) {
+    const r    = rows[i];
+    const flex = ((r.b - r.a) / totalSpan * 100).toFixed(2); // segments always fill the full bar
+    const isChosen   = r.s === chosenSize;
+    const isNeighbor = Math.abs(i - chosenIdx) === 1;
+    const cls = isChosen ? 'viz-seg chosen' : isNeighbor ? 'viz-seg neighbor' : 'viz-seg';
+    segs += `<div class="${cls}" style="flex:${flex}% 0 0" title="${r.s}: ${r.a}–${r.b} ${unit}">${r.s}</div>`;
+  }
+
+  const markerCls = outside ? 'viz-marker outside' : 'viz-marker';
+  const chosen    = rows[chosenIdx] ?? rows[rows.length - 1];
+  const rangeNote = `Velikost ${chosen.s}: ${chosen.a}–${chosen.b} ${unit}`;
+
+  return `
+    <div class="viz-wrap">
+      <div class="viz-title">Poloha vaší míry — ${label}</div>
+      <div class="viz-bar-outer">
+        <div class="viz-bar">${segs}</div>
+        <div class="${markerCls}" style="left:${markerPct}%" data-label="${value} ${unit}"></div>
+      </div>
+      <div class="viz-range-note">${rangeNote}</div>
+    </div>`;
+}
+
+// ---- submit --------------------------------------------------------------
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const type   = getVal("type");
+  const gender = getVal("gender");
+
+  if (type === "sleeves") return;
+
+  // Collect measurement values
+  const input = { gender, type };
+
+  ["chest", "hips", "waist", "height", "handCircumference", "shoeSize"].forEach(key => {
+    const el = document.getElementById(`m-${key}`);
+    if (el && el.value !== "") {
+      input[key] = parseFloat(el.value);
+    }
+  });
+
+  if (gender === "men" && extCheck.checked) {
+    input.menFit = "extended";
+  }
+
+  // Round measurements before calculation:
+  // body measurements → nearest whole cm; shoe size → nearest whole EU number
+  const calc = { ...input };
+  ["chest", "hips", "waist", "height", "handCircumference"].forEach(k => {
+    if (calc[k] !== undefined) calc[k] = Math.round(calc[k]);
+  });
+  if (calc.shoeSize !== undefined) calc.shoeSize = Math.round(calc.shoeSize);
+
+  const vizContainer = document.getElementById('viz-container');
+  const outWarn      = document.getElementById('out-of-range-warn');
+
+  resultBox.className = "";
+
+  try {
+    const result = getSize(calc);
+    resultBox.style.display = "block";
+    resultSize.textContent  = result.size;
+    resultNote.textContent  = translateNote(result.note);
+    if (result.onBorder) {
+      borderBadge.classList.remove("hidden");
+    } else {
+      borderBadge.classList.add("hidden");
+    }
+
+    // Out-of-range warning + proximity viz (using rounded values)
+    const vizCfgs = getVizConfigs(calc);
+    const anyOutside = vizCfgs.some(c => c.value !== undefined
+      && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
+    if (anyOutside) {
+      const oob = vizCfgs.find(c => c.value !== undefined
+        && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
+      outWarn.textContent = `Zadaná hodnota (${oob.label.toLowerCase()}: ${oob.value} ${oob.unit}) je mimo rozsah naší tabulky — zobrazujeme nejbližší dostupnou velikost.`;
+      outWarn.classList.remove("hidden");
+    } else {
+      outWarn.classList.add("hidden");
+    }
+
+    const vizHtml = vizCfgs
+      .map(c => buildVizHtml(c.rows, c.value, result.size, c.unit, c.label))
+      .join('');
+    vizContainer.innerHTML = vizHtml;
+    vizContainer.classList.toggle("hidden", !vizHtml);
+  } catch (err) {
+    resultBox.style.display = "block";
+    resultBox.classList.add("error");
+    resultSize.textContent  = err.message;
+    resultNote.textContent  = "Zkontrolujte prosím svá měření a zkuste to znovu.";
+    borderBadge.classList.add("hidden");
+    outWarn.classList.add("hidden");
+    vizContainer.innerHTML = "";
+    vizContainer.classList.add("hidden");
+  }
+});
+
+// ---- init ----------------------------------------------------------------
+renderInputs();
+toggleExtended();
+</script>
+</body>
+</html>

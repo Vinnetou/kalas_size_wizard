@@ -1,0 +1,68 @@
+/**
+ * Gender categories for sizing.
+ */
+export type Gender = "men" | "women" | "children";
+
+/**
+ * Clothing types available.
+ * - top: jerseys, jackets, vests, arm sleeves (sized by chest for adults, height for children)
+ * - bottom: shorts, bibs, leg/knee sleeves (sized by hips for adults, waist for children)
+ * - gloves: cycling gloves (sized by hand circumference)
+ * - shoe_covers: shoe covers and socks (sized by EU shoe size)
+ */
+export type ClothingType = "top" | "bottom" | "gloves" | "shoe_covers";
+
+/**
+ * Whether to use standard or extended (prodloužené) men's sizes.
+ * Only applies when gender is "men". Extended sizes have longer inseam/torso
+ * at the same chest/waist as standard sizes 1–4.
+ */
+export type MenFit = "standard" | "extended";
+
+/**
+ * Input measurements for size calculation. All values in cm except shoeSize (EU).
+ * Which fields are required depends on the clothing type:
+ *
+ * - top (men/women): chest required, height optional (tiebreaker)
+ * - top (children): height required, chest optional (tiebreaker)
+ * - bottom (men/women): hips required, height optional (tiebreaker)
+ * - bottom (children): waist required
+ * - gloves: handCircumference required
+ * - shoe_covers: shoeSize required (EU)
+ */
+export interface SizeInput {
+  gender: Gender;
+  type: ClothingType;
+  /** Height in cm */
+  height?: number;
+  /** Chest circumference in cm */
+  chest?: number;
+  /** Waist circumference in cm */
+  waist?: number;
+  /** Hip circumference in cm */
+  hips?: number;
+  /** Hand circumference in cm (for gloves) */
+  handCircumference?: number;
+  /** EU shoe size (for shoe covers / socks) */
+  shoeSize?: number;
+  /**
+   * Men only: use standard sizes (1–8) or extended/prodloužené sizes (1+–4+).
+   * Defaults to "standard".
+   */
+  menFit?: MenFit;
+}
+
+/**
+ * Result returned by getSize().
+ */
+export interface SizeResult {
+  /** Recommended size label, e.g. "3", "4+", "XL", "110", "8", "40-42" */
+  size: string;
+  /**
+   * When the measurement falls on the boundary between two sizes the larger
+   * size is recommended. This flag is true in that case.
+   */
+  onBorder: boolean;
+  /** Human-readable note explaining the recommendation */
+  note: string;
+}
