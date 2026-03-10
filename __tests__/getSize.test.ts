@@ -141,6 +141,22 @@ describe("getSize – children bottoms", () => {
 });
 
 describe("getSize – gloves", () => {
+  it("returns size 6 for adult hand below 13.5 cm", () => {
+    const r = getSize({ gender: "men", type: "gloves", handCircumference: 12.1 });
+    expect(r.size).toBe("6");
+  });
+
+  it("border hand 16.2 cm -> size 7 (larger)", () => {
+    const r = getSize({ gender: "women", type: "gloves", handCircumference: 16.2 });
+    expect(r.size).toBe("7");
+    expect(r.onBorder).toBe(true);
+  });
+
+  it("keeps one-decimal precision for glove measurements", () => {
+    const r = getSize({ gender: "women", type: "gloves", handCircumference: 16.24 });
+    expect(r.note).toContain("16.2 cm");
+  });
+
   it("returns size 8 for hand 21 cm", () => {
     const r = getSize({ gender: "men", type: "gloves", handCircumference: 21 });
     expect(r.size).toBe("8");
@@ -154,6 +170,17 @@ describe("getSize – gloves", () => {
   it("returns size 4 for very small hand 10 cm", () => {
     const r = getSize({ gender: "children", type: "gloves", handCircumference: 10 });
     expect(r.size).toBe("4");
+  });
+
+  it("returns size 5 for children at 12.0 cm (border -> larger)", () => {
+    const r = getSize({ gender: "children", type: "gloves", handCircumference: 12.0 });
+    expect(r.size).toBe("5");
+    expect(r.onBorder).toBe(true);
+  });
+
+  it("returns size 5 for children above 14.5 cm", () => {
+    const r = getSize({ gender: "children", type: "gloves", handCircumference: 19.8 });
+    expect(r.size).toBe("5");
   });
 
   it("throws when handCircumference is missing", () => {

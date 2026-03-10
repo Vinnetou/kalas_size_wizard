@@ -191,32 +191,57 @@ function getGloveSize(input: SizeInput): SizeResult {
   if (input.handCircumference === undefined) {
     throw new Error("handCircumference is required for glove sizing");
   }
-  const v = input.handCircumference;
+  const v = Math.round(input.handCircumference * 10) / 10;
 
-  let matched = GLOVES.find(
-    (g) => v >= g.handMin && (g.isLastRow ? true : v < g.handMax)
-  );
-
-  // Boundary value — if falls on a boundary between two sizes pick the larger.
-  if (!matched) {
-    // Try inclusive upper bound.
-    matched = GLOVES.find((g) => v >= g.handMin && v <= g.handMax);
-  }
-
-  if (!matched) {
-    // Clamp.
-    matched = v < GLOVES[0].handMax ? GLOVES[0] : GLOVES[GLOVES.length - 1];
+  // Children use only sizes 4 and 5. Anything >= 12.0 cm maps to size 5.
+  if (input.gender === "children") {
+    const onBorder = v === 12.0;
+    const size = v < 12.0 ? "4" : "5";
     return {
-      size: matched.size,
-      onBorder: false,
-      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${matched.size}.`,
+      size,
+      onBorder,
+      note: onBorder
+        ? `Hand circumference ${v} cm falls on the border between children glove sizes. The larger size ${size} is recommended.`
+        : `Recommended glove size based on hand circumference ${v} cm.`,
     };
   }
 
+  // Adults use sizes 6–10. Anything below 13.5 cm still maps to size 6.
+  const adultGloves = GLOVES.filter((g) => Number(g.size) >= 6);
+  const firstAdult = adultGloves[0];
+
+  if (v < firstAdult.handMin) {
+    return {
+      size: firstAdult.size,
+      onBorder: false,
+      note: `Hand circumference ${v} cm is below the adult range. Nearest adult size: ${firstAdult.size}.`,
+    };
+  }
+
+  const matched = adultGloves.find(
+    (g) => v >= g.handMin && (g.isLastRow ? true : v < g.handMax)
+  );
+
+  if (!matched) {
+    const fallback = adultGloves[adultGloves.length - 1];
+    return {
+      size: fallback.size,
+      onBorder: false,
+      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${fallback.size}.`,
+    };
+  }
+
+  // Border value between consecutive adult sizes -> recommend the larger size.
+  const onBorder = adultGloves
+    .slice(1)
+    .some((g) => v === g.handMin);
+
   return {
     size: matched.size,
-    onBorder: false,
-    note: `Recommended glove size based on hand circumference ${v} cm.`,
+    onBorder,
+    note: onBorder
+      ? `Hand circumference ${v} cm falls on the border between two glove sizes. The larger size ${matched.size} is recommended.`
+      : `Recommended glove size based on hand circumference ${v} cm.`,
   };
 }
 

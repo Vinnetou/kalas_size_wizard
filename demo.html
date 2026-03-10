@@ -201,6 +201,7 @@
       line-height: 1.5;
     }
 
+
     /* ---- button ---- */
     button[type="submit"] {
       width: 100%;
@@ -553,6 +554,7 @@ const PLACEHOLDER_VALS = {
   shoeSize:          { men: 42,  women: 42,  children: 42  },
 };
 
+
 function getPlaceholder(key, gender) {
   const g = PLACEHOLDER_VALS[key];
   return String(g?.[gender] ?? g?.men ?? 80);
@@ -575,6 +577,7 @@ function getFieldKeys() {
   if (!genderSchema) return [];
   return genderSchema[type] ?? [];
 }
+
 
 function renderInputs() {
   const keys   = getFieldKeys();
@@ -721,13 +724,17 @@ const VIZ = {
     waist:  [{s:'110',a:53,b:55},{s:'122',a:55,b:57},{s:'134',a:57,b:61},{s:'146',a:61,b:65},{s:'158',a:65,b:69}],
     chest:  [{s:'110',a:56,b:60},{s:'122',a:60,b:64},{s:'134',a:64,b:68},{s:'146',a:68,b:72},{s:'158',a:72,b:78}],
   },
-  gloves:      [{s:'4',a:0,b:12},{s:'5',a:12,b:14.5},{s:'6',a:13.5,b:16.2},{s:'7',a:16.2,b:18.9},{s:'8',a:18.9,b:21.6},{s:'9',a:21.6,b:24.3},{s:'10',a:24.3,b:27}],
+  gloves_children: [{s:'4',a:0,b:12},{s:'5',a:12,b:14.5}],
+  gloves_adult:    [{s:'6',a:13.5,b:16.2},{s:'7',a:16.2,b:18.9},{s:'8',a:18.9,b:21.6},{s:'9',a:21.6,b:24.3},{s:'10',a:24.3,b:27}],
   shoe_covers: [{s:'35-36',a:35,b:36},{s:'37-39',a:37,b:39},{s:'40-42',a:40,b:42},{s:'43-45',a:43,b:45},{s:'46-48',a:46,b:48}],
 };
 
 function getVizConfigs(input) {
   const { gender, type, menFit = 'standard' } = input;
-  if (type === 'gloves')      return [{ rows: VIZ.gloves,      value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
+  if (type === 'gloves') {
+    const rows = gender === 'children' ? VIZ.gloves_children : VIZ.gloves_adult;
+    return [{ rows, value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
+  }
   if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: 'Velikost boty' }];
   const tbl = gender === 'children'                    ? VIZ.children
             : gender === 'men' && menFit === 'extended' ? VIZ.men_ext
@@ -830,9 +837,12 @@ form.addEventListener("submit", e => {
   // Round measurements before calculation:
   // body measurements → nearest whole cm; shoe size → nearest whole EU number
   const calc = { ...input };
-  ["chest", "hips", "waist", "height", "handCircumference"].forEach(k => {
+  ["chest", "hips", "waist", "height"].forEach(k => {
     if (calc[k] !== undefined) calc[k] = Math.round(calc[k]);
   });
+  if (calc.handCircumference !== undefined) {
+    calc.handCircumference = Math.round(calc.handCircumference * 10) / 10;
+  }
   if (calc.shoeSize !== undefined) calc.shoeSize = Math.round(calc.shoeSize);
 
   const vizContainer = document.getElementById('viz-container');
