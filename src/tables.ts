@@ -21,9 +21,10 @@ export interface SizeRow {
 }
 
 // ---------------------------------------------------------------------------
-// Men – standard sizes (1 – 8)
+// Men – standard sizes (0 – 8)
 // ---------------------------------------------------------------------------
 export const MEN_STANDARD: SizeRow[] = [
+  { size: "0", height: [0, 160],   chest: [80, 84],   waist: [0, 72],    hips: [81, 85]   },
   { size: "1", height: [160, 165], chest: [84, 88],   waist: [72, 76],   hips: [85, 89]   },
   { size: "2", height: [165, 170], chest: [88, 92],   waist: [76, 80],   hips: [89, 93]   },
   { size: "3", height: [170, 175], chest: [92, 96],   waist: [80, 84],   hips: [93, 97]   },
@@ -46,10 +47,11 @@ export const MEN_EXTENDED: SizeRow[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Women – sizes 1 – 6
+// Women – sizes 0 – 6
 // ---------------------------------------------------------------------------
 export const WOMEN: SizeRow[] = [
-  { size: "1", height: [156, 160], chest: [85, 86],   waist: [64, 68], hips: [86, 90]   },
+  { size: "0", height: [0, 156],   chest: [78, 82],   waist: [0, 64],  hips: [82, 86]   },
+  { size: "1", height: [156, 160], chest: [82, 86],   waist: [64, 68], hips: [86, 90]   },
   { size: "2", height: [160, 164], chest: [86, 90],   waist: [68, 72], hips: [90, 94]   },
   { size: "3", height: [164, 168], chest: [90, 94],   waist: [72, 76], hips: [94, 98]   },
   { size: "4", height: [168, 172], chest: [94, 98],   waist: [76, 80], hips: [98, 102]  },

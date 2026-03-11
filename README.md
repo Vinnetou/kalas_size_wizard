@@ -32,6 +32,7 @@ All measurements in cm. Ranges are **inclusive** on both ends.
 
 | Size | Height | Chest | Waist | Hips |
 |------|--------|-------|-------|------|
+| 0 | 0-160 | 80-84 | 0-72 | 81-85 |
 | 1 | 160–165 | 84–88 | 72–76 | 85–89 |
 | 2 | 165–170 | 88–92 | 76–80 | 89–93 |
 | 3 | 170–175 | 92–96 | 80–84 | 93–97 |
@@ -69,13 +70,35 @@ The extended series is derived automatically from the standard size number (1–
 - Top example: chest 92 cm (size 3) + height 187 cm → `3+`.
 - Bottom example: hips 95 cm (size 3) + height 186 cm → `3+`.
 
+### Size name mapping
+
+| Numeric size | Name |
+|---|---|
+| 0 | XXS |
+| 1 | XS |
+| 2 | S |
+| 3 | M |
+| 4 | L |
+| 5 | XL |
+| 6 | XXL |
+| 7 | 3XL |
+| 8 | 4XL |
+
+| Extended size | Name |
+|---|---|
+| 1+ | XS+ |
+| 2+ | S+ |
+| 3+ | M+ |
+| 4+ | L+ |
+
 ---
 
 ### Women – sizes 1–6
 
 | Size | Height | Chest | Waist | Hips |
 |------|--------|-------|-------|------|
-| 1 | 156–160 | 85–86 | 64–68 | 86–90 |
+| 0 | 0-156 | 78–82 | 0-64 | 82-86 |
+| 1 | 156–160 | 82–86 | 64–68 | 86–90 |
 | 2 | 160–164 | 86–90 | 68–72 | 90–94 |
 | 3 | 164–168 | 90–94 | 72–76 | 94–98 |
 | 4 | 168–172 | 94–98 | 76–80 | 98–102 |

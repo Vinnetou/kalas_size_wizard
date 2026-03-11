@@ -183,7 +183,7 @@
     /* ---- measurement visual ---- */
     #measurement-visual {
       display: none;
-      margin-bottom: 16px;
+      margin-top: 16px;
       background: #f8fafc;
       border: 1px solid #e4e4e7;
       border-radius: 10px;
@@ -221,9 +221,30 @@
       border: 1px solid #e2e8f0;
       background: #fff;
     }
+    .mv-group {
+      display: none;
+      width: 100%;
+      gap: 10px;
+      align-items: start;
+      justify-items: center;
+    }
+    .mv-group.active {
+      display: grid;
+    }
+    .mv-group.pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 700px;
+    }
+    .mv-group.single {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 340px;
+    }
+    .mv-group .mv-image {
+      max-width: 100%;
+    }
     .mv-glove-image {
       width: 100%;
-      max-width: 180px;
+      max-width: 280px;
       height: auto;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
@@ -232,40 +253,6 @@
     }
     .mv-hidden {
       display: none !important;
-    }
-    .mv-figure {
-      display: none;
-      width: 100%;
-      max-width: 360px;
-      height: auto;
-    }
-    .mv-figure.active { display: block; }
-    .mv-body {
-      fill: #dbeafe;
-      stroke: #60a5fa;
-      stroke-width: 2;
-    }
-    .mv-meas {
-      stroke: #d40000;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-    }
-    .mv-height {
-      stroke: #0f766e;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-    }
-    .mv-label {
-      font-size: 11px;
-      font-weight: 700;
-      fill: #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .mv-label.hidden,
-    .mv-meas.hidden,
-    .mv-height.hidden {
-      display: none;
     }
     .mv-measures {
       margin-top: 10px;
@@ -310,6 +297,13 @@
       border: 2px solid #d40000;
       background: #fff8f8;
     }
+    #result-primary {
+      border: 2px solid #d40000;
+      border-radius: 10px;
+      padding: 14px 14px 12px;
+      background: #fff3f3;
+      margin-bottom: 18px;
+    }
     #result .result-label {
       font-size: 0.75rem;
       font-weight: 700;
@@ -323,6 +317,10 @@
       color: #18181b;
       line-height: 1.1;
       margin: 4px 0 8px;
+    }
+    #result .size-value .size-sep {
+      font-weight: 500;
+      opacity: 0.92;
     }
     #result .border-badge {
       display: inline-block;
@@ -367,6 +365,16 @@
       padding-top: 14px;
       border-top: 1px solid #fde8e8;
     }
+    .viz-wrap.viz-wrap-final {
+      margin-top: 12px;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+    .viz-wrap.viz-wrap-final + .viz-wrap {
+      margin-top: 24px;
+    }
     .viz-title {
       font-size: 0.7rem;
       font-weight: 700;
@@ -374,6 +382,19 @@
       letter-spacing: 0.5px;
       color: #71717a;
       margin-bottom: 8px;
+    }
+    .viz-wrap.viz-wrap-final .viz-title {
+      font-size: 0.78rem;
+      color: #b00000;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+    .viz-wrap.viz-wrap-final .viz-bar {
+      height: 34px;
+    }
+    .viz-wrap.viz-wrap-final .viz-range-note {
+      font-weight: 700;
+      color: #b00000;
     }
     .viz-bar-outer {
       position: relative;
@@ -426,6 +447,16 @@
       font-size: 0.75rem;
       color: #71717a;
       margin-top: 2px;
+    }
+    .secondary-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f4f4f5;
+      color: #52525b;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      border: 1px solid #e4e4e7;
     }
 
     /* ---- hidden ---- */
@@ -487,8 +518,8 @@
       .mv-subtitle {
         font-size: 0.72rem;
       }
-      .mv-label {
-        font-size: 10px;
+      .mv-group.pair {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -547,62 +578,6 @@
         <strong>Návleky na kolena / nohy</strong> — stejná velikost jako vaše kraťasy/lacláče. Použijte tabulku pro spodní část.
       </div>
 
-      <div id="measurement-visual">
-        <div class="mv-head">
-          <div class="mv-title">Kde správně měřit</div>
-          <div id="mv-subtitle" class="mv-subtitle"></div>
-        </div>
-        <div class="mv-stage">
-          <svg id="mv-men" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
-            <ellipse class="mv-body" cx="180" cy="36" rx="24" ry="22"></ellipse>
-            <path class="mv-body" d="M120 84 L140 62 L220 62 L240 84 L230 188 L130 188 Z"></path>
-            <rect class="mv-body" x="130" y="186" width="34" height="56" rx="12"></rect>
-            <rect class="mv-body" x="196" y="186" width="34" height="56" rx="12"></rect>
-            <line class="mv-height" data-meas="height" x1="72" y1="14" x2="72" y2="244"></line>
-            <line class="mv-meas" data-meas="chest" x1="138" y1="100" x2="222" y2="100"></line>
-            <line class="mv-meas" data-meas="waist" x1="136" y1="132" x2="224" y2="132"></line>
-            <line class="mv-meas" data-meas="hips" x1="132" y1="164" x2="228" y2="164"></line>
-            <text class="mv-label" data-meas="height" x="42" y="130" transform="rotate(-90 42,130)">Vyska</text>
-            <text class="mv-label" data-meas="chest" x="234" y="104">Hrudnik</text>
-            <text class="mv-label" data-meas="waist" x="234" y="136">Pas</text>
-            <text class="mv-label" data-meas="hips" x="234" y="168">Boky</text>
-          </svg>
-
-          <svg id="mv-women" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
-            <ellipse class="mv-body" cx="180" cy="36" rx="22" ry="21"></ellipse>
-            <path class="mv-body" d="M132 84 L146 64 L214 64 L228 84 L216 152 L238 188 L122 188 L144 152 Z"></path>
-            <rect class="mv-body" x="142" y="186" width="28" height="56" rx="12"></rect>
-            <rect class="mv-body" x="190" y="186" width="28" height="56" rx="12"></rect>
-            <line class="mv-height" data-meas="height" x1="78" y1="14" x2="78" y2="244"></line>
-            <line class="mv-meas" data-meas="chest" x1="146" y1="102" x2="214" y2="102"></line>
-            <line class="mv-meas" data-meas="waist" x1="152" y1="132" x2="208" y2="132"></line>
-            <line class="mv-meas" data-meas="hips" x1="136" y1="164" x2="224" y2="164"></line>
-            <text class="mv-label" data-meas="height" x="48" y="130" transform="rotate(-90 48,130)">Vyska</text>
-            <text class="mv-label" data-meas="chest" x="232" y="106">Hrudnik</text>
-            <text class="mv-label" data-meas="waist" x="232" y="136">Pas</text>
-            <text class="mv-label" data-meas="hips" x="232" y="168">Boky</text>
-          </svg>
-
-          <svg id="mv-children" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
-            <ellipse class="mv-body" cx="180" cy="44" rx="19" ry="17"></ellipse>
-            <path class="mv-body" d="M144 86 L156 70 L204 70 L216 86 L208 168 L152 168 Z"></path>
-            <rect class="mv-body" x="156" y="166" width="20" height="58" rx="10"></rect>
-            <rect class="mv-body" x="184" y="166" width="20" height="58" rx="10"></rect>
-            <line class="mv-height" data-meas="height" x1="92" y1="20" x2="92" y2="230"></line>
-            <line class="mv-meas" data-meas="chest" x1="156" y1="104" x2="204" y2="104"></line>
-            <line class="mv-meas" data-meas="waist" x1="156" y1="132" x2="204" y2="132"></line>
-            <line class="mv-meas" data-meas="hips" x1="152" y1="156" x2="208" y2="156"></line>
-            <text class="mv-label" data-meas="height" x="62" y="126" transform="rotate(-90 62,126)">Vyska</text>
-            <text class="mv-label" data-meas="chest" x="218" y="108">Hrudnik</text>
-            <text class="mv-label" data-meas="waist" x="218" y="136">Pas</text>
-            <text class="mv-label" data-meas="hips" x="218" y="160">Boky</text>
-          </svg>
-
-          <img id="mv-glove-image" class="mv-glove-image mv-hidden" src="./pictures/glove_measure.png" alt="Měření obvodu ruky" />
-          <div id="mv-measures" class="mv-measures"></div>
-        </div>
-      </div>
-
       <!-- MEASUREMENTS -->
       <div class="field" id="measurements-field">
         <label>Vaše míry</label>
@@ -616,12 +591,40 @@
 
     <!-- RESULT -->
     <div id="result">
-      <div class="result-label">Doporučená velikost</div>
-      <div class="size-value" id="result-size"></div>
-      <div class="border-badge hidden" id="border-badge">Na hranici dvou velikostí — doporučujeme větší</div>
-      <div class="out-of-range-warn hidden" id="out-of-range-warn"></div>
-      <div class="result-note" id="result-note"></div>
+      <div id="result-primary">
+        <div class="result-label">Doporučená velikost</div>
+        <div class="size-value" id="result-size"></div>
+        <div class="border-badge hidden" id="border-badge">Na hranici dvou velikostí — doporučujeme větší</div>
+        <div class="out-of-range-warn hidden" id="out-of-range-warn"></div>
+        <div class="result-note" id="result-note"></div>
+        <div id="final-viz-container" class="hidden"></div>
+      </div>
       <div id="viz-container" class="hidden"></div>
+    </div>
+
+    <div id="measurement-visual">
+      <div class="mv-head">
+        <div class="mv-title">Kde správně měřit</div>
+        <div id="mv-subtitle" class="mv-subtitle"></div>
+      </div>
+      <div class="mv-stage">
+        <div id="mv-men" class="mv-group pair">
+          <img class="mv-image" src="./pictures/men_hrudnik.jpg" alt="Muži - měření hrudníku" />
+          <img class="mv-image" src="./pictures/men_boky.jpg" alt="Muži - měření boků" />
+        </div>
+
+        <div id="mv-women" class="mv-group pair">
+          <img class="mv-image" src="./pictures/women_hrudnik.jpg" alt="Ženy - měření hrudníku" />
+          <img class="mv-image" src="./pictures/women_boky.jpg" alt="Ženy - měření boků" />
+        </div>
+
+        <div id="mv-children" class="mv-group single">
+          <img class="mv-image" src="./pictures/kids.jpg" alt="Děti - jak měřit" />
+        </div>
+
+        <img id="mv-glove-image" class="mv-glove-image mv-hidden" src="./pictures/gloves.jpg" alt="Měření obvodu ruky" />
+        <div id="mv-measures" class="mv-measures"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -668,6 +671,7 @@ const resultBox   = document.getElementById("result");
 const resultSize  = document.getElementById("result-size");
 const borderBadge = document.getElementById("border-badge");
 const resultNote  = document.getElementById("result-note");
+const finalVizContainer = document.getElementById('final-viz-container');
 const sleeveInfo  = document.getElementById("sleeve-info");
 const measField   = document.getElementById("measurements-field");
 const measurementVisual = document.getElementById("measurement-visual");
@@ -688,6 +692,34 @@ const PLACEHOLDER_VALS = {
   handCircumference: { men: 18,  women: 18,  children: 18  },
   shoeSize:          { men: 42,  women: 42,  children: 42  },
 };
+
+const SIZE_NAME_MAP = {
+  "0": "XXS",
+  "1": "XS",
+  "2": "S",
+  "3": "M",
+  "4": "L",
+  "5": "XL",
+  "6": "XXL",
+  "7": "3XL",
+  "8": "4XL",
+  "1+": "XS+",
+  "2+": "S+",
+  "3+": "M+",
+  "4+": "L+",
+};
+
+function formatSizeWithName(size) {
+  const name = SIZE_NAME_MAP[size];
+  return name ? `${size} / ${name}` : size;
+}
+
+function formatSizeWithNameHtml(size) {
+  const name = SIZE_NAME_MAP[size];
+  return name
+    ? `<span class="size-num">${size}</span><span class="size-sep"> / </span><span class="size-name">${name}</span>`
+    : `<span class="size-num">${size}</span>`;
+}
 
 
 function getPlaceholder(key, gender) {
@@ -717,7 +749,7 @@ function updateMeasurementVisual() {
   const gender = getVal("gender");
   const type = getVal("type");
 
-  const show = type !== "shoe_covers";
+  const show = type !== "shoe_covers" && (type === "gloves" || gender !== "children");
   measurementVisual.style.display = show ? "block" : "none";
   if (!show) return;
 
@@ -734,25 +766,16 @@ function updateMeasurementVisual() {
   if (type === "gloves") {
     Object.values(figures).forEach(el => el.classList.remove("active"));
     mvGloveImage.classList.remove("mv-hidden");
-    mvSubtitle.textContent = "Rukavice - měřte obvod ruky (A).";
-    mvMeasures.innerHTML = '<span class="mv-chip">Obvod ruky (A)</span>';
+    mvSubtitle.textContent = "";
+    mvMeasures.innerHTML = '<span class="mv-chip">Obvod ruky</span>';
     return;
   }
 
   mvGloveImage.classList.add("mv-hidden");
 
-  const who = gender === "men" ? "Muži" : gender === "women" ? "Ženy" : "Děti";
-  mvSubtitle.textContent = `Aktivní měření pro: ${who}`;
+  mvSubtitle.textContent = "";
 
-  const activeFigure = figures[gender] || figures.men;
-  const valid = gender === "children"
-    ? new Set(["height", "chest", "waist"])
-    : new Set(["height", "chest", "waist", "hips"]);
-
-  activeFigure.querySelectorAll("[data-meas]").forEach(el => {
-    const k = el.getAttribute("data-meas");
-    el.classList.toggle("hidden", !valid.has(k));
-  });
+  const valid = new Set(["chest", "hips"]);
 
   mvMeasures.innerHTML = Array.from(valid)
     .map(key => {
@@ -830,70 +853,95 @@ const MEAS_CS = {
 const GARMENT_CS = { top: "horního oblečení", bottom: "spodního oblečení" };
 
 function translateNote(note) {
+  const extMatch = note.match(/ Extended size chosen because (height|hips) ([\d.]+) cm exceeded cutoff ([\d.]+) cm for size (\d+)\.$/);
+  const extCs = extMatch
+    ? ` Prodloužená velikost byla zvolena na základě sekundární míry (${MEAS_CS[extMatch[1]] || extMatch[1]}), protože hodnota ${extMatch[2]} cm překročila hranici ${extMatch[3]} cm pro velikost ${extMatch[4]}.`
+    : "";
+  const coreNote = (extMatch ? note.replace(/ Extended size chosen because .*$/, "") : note).trim();
+
   let m;
 
   // "Recommended top/bottom size based on <meas>."
-  m = note.match(/^Recommended (top|bottom) size based on (\w+)\.$/);
+  m = coreNote.match(/^Recommended (top|bottom) size based on (\w+)\.$/);
   if (m) {
     const g = GARMENT_CS[m[1]] || m[1];
     const meas = MEAS_CS[m[2]] || m[2];
-    return `Doporučená velikost ${g} na základě: ${meas}.`;
+    return `Doporučená velikost ${g} na základě: ${meas}.${extCs}`;
   }
 
   // "Recommended glove size based on hand circumference X cm."
-  m = note.match(/^Recommended glove size based on hand circumference ([\d.]+) cm\.$/);
+  m = coreNote.match(/^Recommended glove size based on hand circumference ([\d.]+) cm\.$/);
   if (m) return `Doporučená velikost rukavic na základě obvodu ruky ${m[1]} cm.`;
 
   // "Recommended shoe cover / sock size for EU shoe size X."
-  m = note.match(/^Recommended shoe cover \/ sock size for EU shoe size ([\d.]+)\.$/);
+  m = coreNote.match(/^Recommended shoe cover \/ sock size for EU shoe size ([\d.]+)\.$/);
   if (m) return `Doporučená velikost návleků / ponožek pro velikost boty EU ${m[1]}.`;
 
   // "Your <meas> measurement is smaller than our smallest size. Size X is the closest available."
-  m = note.match(/^Your (\w+) measurement is smaller than our smallest size\. Size (.+) is the closest available\.$/);
+  m = coreNote.match(/^Your (\w+) measurement is smaller than our smallest size\. Size (.+) is the closest available\.$/);
   if (m) {
     const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) je menší než nejmenší dostupná velikost. Nejbližší velikost: ${m[2]}.`;
+    return `Vaše míra (${meas}) je menší než nejmenší dostupná velikost. Nejbližší velikost: ${m[2]}.${extCs}`;
   }
 
   // "Your <meas> measurement is larger than our largest size. Size X is the closest available."
-  m = note.match(/^Your (\w+) measurement is larger than our largest size\. Size (.+) is the closest available\.$/);
+  m = coreNote.match(/^Your (\w+) measurement is larger than our largest size\. Size (.+) is the closest available\.$/);
   if (m) {
     const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) je větší než největší dostupná velikost. Nejbližší velikost: ${m[2]}.`;
+    return `Vaše míra (${meas}) je větší než největší dostupná velikost. Nejbližší velikost: ${m[2]}.${extCs}`;
   }
 
   // "Your <meas> measurement falls exactly on the border between two sizes. The larger size X is recommended."
-  m = note.match(/^Your (\w+) measurement falls exactly on the border between two sizes\. The larger size (.+) is recommended\.$/);
+  m = coreNote.match(/^Your (\w+) measurement falls exactly on the border between two sizes\. The larger size (.+) is recommended\.$/);
   if (m) {
     const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) leží přesně na hranici dvou velikostí. Doporučujeme větší velikost ${m[2]}.`;
+    return `Vaše míra (${meas}) leží přesně na hranici dvou velikostí. Doporučujeme větší velikost ${m[2]}.${extCs}`;
   }
 
   // "Hand circumference X cm is outside the standard range. Nearest size: Y."
-  m = note.match(/^Hand circumference ([\d.]+) cm is outside the standard range\. Nearest size: (.+)\.$/);
+  m = coreNote.match(/^Hand circumference ([\d.]+) cm is outside the standard range\. Nearest size: (.+)\.$/);
   if (m) return `Obvod ruky ${m[1]} cm je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
 
   // "EU shoe size X is outside the standard range. Nearest size: Y."
-  m = note.match(/^EU shoe size ([\d.]+) is outside the standard range\. Nearest size: (.+)\.$/);
+  m = coreNote.match(/^EU shoe size ([\d.]+) is outside the standard range\. Nearest size: (.+)\.$/);
   if (m) return `Velikost boty EU ${m[1]} je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
 
-  return note; // fallback: return as-is
+  return coreNote + extCs; // fallback: return as-is with optional extended suffix
 }
 
 // ---- proximity visualization ---------------------------------------------
 
 const VIZ = {
   men_std: {
-    chest: [{s:'1',a:84,b:88},{s:'2',a:88,b:92},{s:'3',a:92,b:96},{s:'4',a:96,b:100},{s:'5',a:100,b:104},{s:'6',a:104,b:112},{s:'7',a:112,b:120},{s:'8',a:120,b:128}],
-    hips:  [{s:'1',a:85,b:89},{s:'2',a:89,b:93},{s:'3',a:93,b:97},{s:'4',a:97,b:101},{s:'5',a:101,b:105},{s:'6',a:105,b:113},{s:'7',a:113,b:121},{s:'8',a:121,b:129}],
+    height:[{s:'0',a:0,b:160},{s:'1',a:160,b:165},{s:'2',a:165,b:170},{s:'3',a:170,b:175},{s:'4',a:175,b:180},{s:'5',a:180,b:185},{s:'6',a:185,b:195},{s:'7',a:195,b:200},{s:'8',a:195,b:200}],
+    chest: [{s:'0',a:80,b:84},{s:'1',a:84,b:88},{s:'2',a:88,b:92},{s:'3',a:92,b:96},{s:'4',a:96,b:100},{s:'5',a:100,b:104},{s:'6',a:104,b:112},{s:'7',a:112,b:120},{s:'8',a:120,b:128}],
+    hips:  [{s:'0',a:81,b:85},{s:'1',a:85,b:89},{s:'2',a:89,b:93},{s:'3',a:93,b:97},{s:'4',a:97,b:101},{s:'5',a:101,b:105},{s:'6',a:105,b:113},{s:'7',a:113,b:121},{s:'8',a:121,b:129}],
   },
   men_ext: {
+    height:[{s:'1+',a:175,b:180},{s:'2+',a:180,b:185},{s:'3+',a:185,b:190},{s:'4+',a:190,b:195}],
     chest: [{s:'1+',a:84,b:88},{s:'2+',a:88,b:92},{s:'3+',a:92,b:96},{s:'4+',a:96,b:100}],
     hips:  [{s:'1+',a:85,b:89},{s:'2+',a:89,b:93},{s:'3+',a:93,b:97},{s:'4+',a:97,b:101}],
   },
+  men_ext_decision: {
+    // Grey-zone decision cutoffs (first third stays normal):
+    // 1+: 168.3+, 2+: 173.3+, 3+: 178.3+, 4+: 183.3+
+    height:[{s:'1+',a:168.3,b:173.3},{s:'2+',a:173.3,b:178.3},{s:'3+',a:178.3,b:183.3},{s:'4+',a:183.3,b:195}],
+  },
+  men_combined: {
+    chest: [
+      {s:'0',a:80,b:84},{s:'1',a:84,b:88},{s:'1+',a:84,b:88},{s:'2',a:88,b:92},{s:'2+',a:88,b:92},{s:'3',a:92,b:96},{s:'3+',a:92,b:96},{s:'4',a:96,b:100},{s:'4+',a:96,b:100},{s:'5',a:100,b:104},{s:'6',a:104,b:112},{s:'7',a:112,b:120},{s:'8',a:120,b:128},
+    ],
+    hips: [
+      {s:'0',a:81,b:85},{s:'1',a:85,b:89},{s:'1+',a:85,b:89},{s:'2',a:89,b:93},{s:'2+',a:89,b:93},{s:'3',a:93,b:97},{s:'3+',a:93,b:97},{s:'4',a:97,b:101},{s:'4+',a:97,b:101},{s:'5',a:101,b:105},{s:'6',a:105,b:113},{s:'7',a:113,b:121},{s:'8',a:121,b:129},
+    ],
+    height: [
+      {s:'0',a:0,b:160},{s:'1',a:160,b:165},{s:'1+',a:175,b:180},{s:'2',a:165,b:170},{s:'2+',a:180,b:185},{s:'3',a:170,b:175},{s:'3+',a:185,b:190},{s:'4',a:175,b:180},{s:'4+',a:190,b:195},{s:'5',a:180,b:185},{s:'6',a:185,b:195},{s:'7',a:195,b:200},{s:'8',a:195,b:200},
+    ],
+  },
   women: {
-    chest: [{s:'1',a:85,b:86},{s:'2',a:86,b:90},{s:'3',a:90,b:94},{s:'4',a:94,b:98},{s:'5',a:98,b:106},{s:'6',a:106,b:114}],
-    hips:  [{s:'1',a:86,b:90},{s:'2',a:90,b:94},{s:'3',a:94,b:98},{s:'4',a:98,b:102},{s:'5',a:102,b:110},{s:'6',a:110,b:118}],
+    height:[{s:'0',a:0,b:156},{s:'1',a:156,b:160},{s:'2',a:160,b:164},{s:'3',a:164,b:168},{s:'4',a:168,b:172},{s:'5',a:172,b:180},{s:'6',a:180,b:184}],
+    chest: [{s:'0',a:78,b:82},{s:'1',a:82,b:86},{s:'2',a:86,b:90},{s:'3',a:90,b:94},{s:'4',a:94,b:98},{s:'5',a:98,b:106},{s:'6',a:106,b:114}],
+    hips:  [{s:'0',a:82,b:86},{s:'1',a:86,b:90},{s:'2',a:90,b:94},{s:'3',a:94,b:98},{s:'4',a:98,b:102},{s:'5',a:102,b:110},{s:'6',a:110,b:118}],
   },
   children: {
     height: [{s:'110',a:104,b:116},{s:'122',a:116,b:128},{s:'134',a:128,b:140},{s:'146',a:140,b:152},{s:'158',a:152,b:161}],
@@ -905,6 +953,27 @@ const VIZ = {
   shoe_covers: [{s:'35-36',a:35,b:36},{s:'37-39',a:37,b:39},{s:'40-42',a:40,b:42},{s:'43-45',a:43,b:45},{s:'46-48',a:46,b:48}],
 };
 
+function getFinalVizConfig(input, chosenSize) {
+  const { gender, type } = input;
+  if (type === 'gloves') {
+    const rows = gender === 'children' ? VIZ.gloves_children : VIZ.gloves_adult;
+    return { rows, chosenSize, label: 'Výsledná velikost', showName: false };
+  }
+  if (type === 'shoe_covers') {
+    return { rows: VIZ.shoe_covers, chosenSize, label: 'Výsledná velikost', showName: false };
+  }
+  if (gender === 'children') {
+    const rows = type === 'top' ? VIZ.children.height : VIZ.children.waist;
+    return { rows, chosenSize, label: 'Výsledná velikost', showName: false };
+  }
+  if (gender === 'men') {
+    const rows = type === 'top' ? VIZ.men_combined.chest : VIZ.men_combined.hips;
+    return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
+  }
+  const rows = type === 'top' ? VIZ.women.chest : VIZ.women.hips;
+  return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
+}
+
 function getVizConfigs(input, chosenSize) {
   const { gender, type } = input;
   if (type === 'gloves') {
@@ -912,7 +981,39 @@ function getVizConfigs(input, chosenSize) {
     return [{ rows, value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
   }
   if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: 'Velikost boty' }];
-  const useMenExtended = gender === 'men' && typeof chosenSize === 'string' && chosenSize.includes('+');
+  const pickSizeForViz = (rows, value) => {
+    if (value === undefined || !rows?.length) return undefined;
+    const matches = rows.filter(r => value >= r.a && value <= r.b);
+    if (matches.length) return matches[matches.length - 1].s;
+    if (value < rows[0].a) return rows[0].s;
+    return rows[rows.length - 1].s;
+  };
+
+  if (gender === 'men') {
+    const baseSize = String(chosenSize).replace('+', '');
+    const finalIsPlus = String(chosenSize).includes('+');
+    const pickOptionalViz = (value) => {
+      const extChosen = pickSizeForViz(VIZ.men_ext_decision.height, value);
+      return { rows: VIZ.men_ext_decision.height, chosenSize: extChosen };
+    };
+
+    if (type === 'top') {
+      const cfgs = [{ rows: VIZ.men_std.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize: baseSize }];
+      if (input.height !== undefined && finalIsPlus) {
+        const optionalViz = pickOptionalViz(input.height);
+        cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: 'Výška', chosenSize: optionalViz.chosenSize });
+      }
+      return cfgs;
+    }
+    const cfgs = [{ rows: VIZ.men_std.hips, value: input.hips, unit: 'cm', label: 'Obvod boků', chosenSize: baseSize }];
+    if (input.height !== undefined && finalIsPlus) {
+      const optionalViz = pickOptionalViz(input.height);
+      cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: 'Výška', chosenSize: optionalViz.chosenSize });
+    }
+    return cfgs;
+  }
+
+  const useMenExtended = false;
   const tbl = gender === 'children'                    ? VIZ.children
             : useMenExtended                            ? VIZ.men_ext
             : gender === 'men'                          ? VIZ.men_std
@@ -927,50 +1028,70 @@ function getVizConfigs(input, chosenSize) {
     }
     return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: 'Obvod pasu' }];
   }
-  if (type === 'top') return [{ rows: tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku' }];
-  if (gender === 'men') return [{ rows: tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků' }];
-  return [{ rows: tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků' }];
+  if (type === 'top') {
+    const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.chest : tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize }];
+    return cfgs;
+  }
+  const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.hips : tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků', chosenSize }];
+  return cfgs;
+}
+
+function buildFinalVizHtml(rows, chosenSize, label, showName = true) {
+  if (!rows?.length) return '';
+  const chosenIdx = rows.findIndex(r => r.s === chosenSize);
+  const segs = rows
+    .map((r, i) => `<div class="${r.s === chosenSize ? 'viz-seg chosen' : (Math.abs(i - chosenIdx) === 1 ? 'viz-seg neighbor' : 'viz-seg')}" style="flex:1 0 0">${r.s}</div>`)
+    .join('');
+  const recommendedText = showName ? formatSizeWithName(chosenSize) : String(chosenSize);
+  return `
+    <div class="viz-wrap viz-wrap-final">
+      <div class="viz-title">${label}</div>
+      <div class="viz-bar-outer">
+        <div class="viz-bar">${segs}</div>
+      </div>
+      <div class="viz-range-note">Doporučeno: ${recommendedText}</div>
+    </div>`;
 }
 
 function buildVizHtml(rows, value, chosenSize, unit, label) {
   if (!value || !rows) return '';
   const totalMin  = rows[0].a;
   const totalMax  = rows[rows.length - 1].b;
-  const totalSpan = rows.reduce((s, r) => s + (r.b - r.a), 0); // sum of segment widths only
+  const segCount = rows.length;
   const outside   = value < totalMin || value > totalMax;
   const clamped   = Math.max(totalMin, Math.min(totalMax, value));
   const chosenIdx = rows.findIndex(r => r.s === chosenSize);
 
-  // Cumulative visual start (in flex units) for each segment
-  const cumStarts = [];
-  let cum = 0;
-  for (const r of rows) { cumStarts.push(cum); cum += (r.b - r.a); }
+  let markerSegIdx = 0;
+  let withinSeg = 0;
+  const containing = rows
+    .map((r, i) => ({ i, r }))
+    .filter(({ r }) => clamped >= r.a && clamped <= r.b);
 
-  // Marker position: find which segment contains the clamped value
-  let markerFlexPct = 0;
-  for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
-    if (clamped >= r.a && clamped <= r.b) {
-      const withinSeg = (r.b - r.a) > 0 ? (clamped - r.a) / (r.b - r.a) : 0;
-      markerFlexPct = (cumStarts[i] + withinSeg * (r.b - r.a)) / totalSpan * 100;
-      break;
-    }
-    // Value is in a gap between this segment and the next: snap to next segment start
-    if (i < rows.length - 1 && clamped > r.b && clamped < rows[i + 1].a) {
-      markerFlexPct = cumStarts[i + 1] / totalSpan * 100;
-      break;
+  if (containing.length) {
+    const preferred = containing.find(({ i }) => i === chosenIdx) ?? containing[containing.length - 1];
+    markerSegIdx = preferred.i;
+    const span = preferred.r.b - preferred.r.a;
+    withinSeg = span > 0 ? (clamped - preferred.r.a) / span : 0.5;
+  } else {
+    if (clamped <= rows[0].a) {
+      markerSegIdx = 0;
+      withinSeg = 0;
+    } else {
+      markerSegIdx = rows.length - 1;
+      withinSeg = 1;
     }
   }
-  const markerPct = markerFlexPct.toFixed(2);
+
+  const markerPct = (((markerSegIdx + withinSeg) / segCount) * 100).toFixed(2);
 
   let segs = '';
   for (let i = 0; i < rows.length; i++) {
     const r    = rows[i];
-    const flex = ((r.b - r.a) / totalSpan * 100).toFixed(2); // segments always fill the full bar
     const isChosen   = r.s === chosenSize;
     const isNeighbor = Math.abs(i - chosenIdx) === 1;
     const cls = isChosen ? 'viz-seg chosen' : isNeighbor ? 'viz-seg neighbor' : 'viz-seg';
-    segs += `<div class="${cls}" style="flex:${flex}% 0 0" title="${r.s}: ${r.a}–${r.b} ${unit}">${r.s}</div>`;
+    segs += `<div class="${cls}" style="flex:1 0 0" title="${r.s}: ${r.a}–${r.b} ${unit}">${r.s}</div>`;
   }
 
   const markerCls = outside ? 'viz-marker outside' : 'viz-marker';
@@ -986,6 +1107,19 @@ function buildVizHtml(rows, value, chosenSize, unit, label) {
       </div>
       <div class="viz-range-note">${rangeNote}</div>
     </div>`;
+}
+
+function getSecondaryNoEffectMessage(input, chosenSize) {
+  const { gender, type } = input;
+  const hasSecondary = input.height !== undefined;
+  const hasExtended = String(chosenSize).includes('+');
+  if (gender === 'men' && (type === 'top' || type === 'bottom') && hasSecondary && !hasExtended) {
+    return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
+  }
+  if (gender === 'women' && (type === 'top' || type === 'bottom') && hasSecondary) {
+    return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
+  }
+  return '';
 }
 
 // ---- submit --------------------------------------------------------------
@@ -1037,7 +1171,9 @@ form.addEventListener("submit", e => {
   try {
     const result = getSize(calc);
     resultBox.style.display = "block";
-    resultSize.textContent  = result.size;
+    resultSize.innerHTML    = type === 'gloves'
+      ? `<span class="size-num">${result.size}</span>`
+      : formatSizeWithNameHtml(result.size);
     resultNote.textContent  = translateNote(result.note);
     if (result.onBorder) {
       borderBadge.classList.remove("hidden");
@@ -1047,6 +1183,7 @@ form.addEventListener("submit", e => {
 
     // Out-of-range warning + proximity viz (using rounded values)
     const vizCfgs = getVizConfigs(calc, result.size);
+    const finalCfg = getFinalVizConfig(calc, result.size);
     const anyOutside = vizCfgs.some(c => c.value !== undefined
       && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
     if (anyOutside) {
@@ -1058,11 +1195,16 @@ form.addEventListener("submit", e => {
       outWarn.classList.add("hidden");
     }
 
+    const finalVizHtml = buildFinalVizHtml(finalCfg.rows, finalCfg.chosenSize, finalCfg.label, finalCfg.showName);
     const vizHtml = vizCfgs
-      .map(c => buildVizHtml(c.rows, c.value, result.size, c.unit, c.label))
+      .map(c => buildVizHtml(c.rows, c.value, c.chosenSize ?? result.size, c.unit, c.label))
       .join('');
-    vizContainer.innerHTML = vizHtml;
-    vizContainer.classList.toggle("hidden", !vizHtml);
+    const secondaryNoEffectMsg = getSecondaryNoEffectMessage(calc, result.size);
+    finalVizContainer.innerHTML = finalVizHtml;
+    finalVizContainer.classList.toggle('hidden', !finalVizHtml);
+    const extraMsgHtml = secondaryNoEffectMsg ? `<div class="secondary-note">${secondaryNoEffectMsg}</div>` : '';
+    vizContainer.innerHTML = vizHtml + extraMsgHtml;
+    vizContainer.classList.toggle("hidden", !(vizHtml || extraMsgHtml));
   } catch (err) {
     resultBox.style.display = "block";
     resultBox.classList.add("error");
@@ -1070,6 +1212,8 @@ form.addEventListener("submit", e => {
     resultNote.textContent  = "Zkontrolujte prosím svá měření a zkuste to znovu.";
     borderBadge.classList.add("hidden");
     outWarn.classList.add("hidden");
+    finalVizContainer.innerHTML = "";
+    finalVizContainer.classList.add("hidden");
     vizContainer.innerHTML = "";
     vizContainer.classList.add("hidden");
   }

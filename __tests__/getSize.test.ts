@@ -1,9 +1,15 @@
 import { getSize } from "../src/index.js";
 
 describe("getSize – men tops", () => {
-  it("returns size 1 for chest 84", () => {
+  it("border chest 84 -> size 1 (larger)", () => {
     const r = getSize({ gender: "men", type: "top", chest: 84 });
     expect(r.size).toBe("1");
+    expect(r.onBorder).toBe(true);
+  });
+
+  it("returns size 0 for chest 82", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 82 });
+    expect(r.size).toBe("0");
     expect(r.onBorder).toBe(false);
   });
 
@@ -25,7 +31,7 @@ describe("getSize – men tops", () => {
 
   it("clamps below for out-of-range small chest", () => {
     const r = getSize({ gender: "men", type: "top", chest: 70 });
-    expect(r.size).toBe("1");
+    expect(r.size).toBe("0");
     expect(r.note).toMatch(/smaller than our smallest/);
   });
 
@@ -52,6 +58,11 @@ describe("getSize – men bottoms", () => {
 });
 
 describe("getSize – men auto-extended", () => {
+  it("switches to plus size above grey-zone cutoff for the same base size", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 91, height: 175 });
+    expect(r.size).toBe("2+");
+  });
+
   it("returns 2+ for chest 89 when height is in extended range", () => {
     const r = getSize({ gender: "men", type: "top", chest: 89, height: 181 });
     expect(r.size).toBe("2+");
@@ -72,32 +83,28 @@ describe("getSize – men auto-extended", () => {
     expect(r.size).toBe("4+");
   });
 
-  it("keeps standard bottom size in first third of grey zone", () => {
-    // For men size 3 bottom by hips: standard height max=175, extended min=185.
-    // Cutoff = 175 + (185-175)/3 = 178.3.
+  it("keeps standard bottom size when optional value is below extended ranges", () => {
     const r = getSize({ gender: "men", type: "bottom", hips: 95, height: 178.3 });
     expect(r.size).toBe("3");
   });
 
-  it("switches bottom to extended above grey-zone cutoff", () => {
+  it("switches bottom to extended when optional variable matches same plus number", () => {
     const r = getSize({ gender: "men", type: "bottom", hips: 95, height: 178.4 });
     expect(r.size).toBe("3+");
   });
 
-  it("keeps standard size in first third of top grey zone", () => {
-    // For men size 1 top: standard height max=165, extended min=175.
-    // Cutoff = 165 + (175-165)/3 = 168.3 (rounded to one decimal).
+  it("keeps standard size below extended top ranges", () => {
     const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.3 });
     expect(r.size).toBe("1");
   });
 
-  it("switches to extended above top grey-zone cutoff", () => {
+  it("keeps standard size when optional top value still does not match plus range", () => {
     const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.4 });
     expect(r.size).toBe("1+");
   });
 
-  it("uses one-decimal precision for secondary measure in top grey zone", () => {
-    const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.36 });
+  it("uses one-decimal precision for secondary measure for extended checks", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 86, height: 175.04 });
     expect(r.size).toBe("1+");
   });
 });
@@ -106,6 +113,17 @@ describe("getSize – women tops", () => {
   it("returns size 1 for chest 85", () => {
     const r = getSize({ gender: "women", type: "top", chest: 85 });
     expect(r.size).toBe("1");
+  });
+
+  it("returns size 0 for chest 80", () => {
+    const r = getSize({ gender: "women", type: "top", chest: 80 });
+    expect(r.size).toBe("0");
+  });
+
+  it("border chest 82 -> size 1 (larger)", () => {
+    const r = getSize({ gender: "women", type: "top", chest: 82 });
+    expect(r.size).toBe("1");
+    expect(r.onBorder).toBe(true);
   });
 
   it("border chest 86 → size 2 (larger)", () => {
@@ -127,6 +145,11 @@ describe("getSize – women tops", () => {
 });
 
 describe("getSize – women bottoms", () => {
+  it("returns size 0 for hips 84", () => {
+    const r = getSize({ gender: "women", type: "bottom", hips: 84 });
+    expect(r.size).toBe("0");
+  });
+
   it("returns size 2 for hips 92", () => {
     const r = getSize({ gender: "women", type: "bottom", hips: 92 });
     expect(r.size).toBe("2");

@@ -98,16 +98,16 @@ function toExtendedMenSize(
   standardRow: SizeRow,
   type: ClothingType,
   input: SizeInput
-): string {
+): { size: string; extendedReason?: { secondary: "height" | "hips"; value: number; cutoff: number; baseSize: string } } {
   const standardSize = standardRow.size;
 
   // Only sizes 1-4 have extended (+) variants.
   if (!["1", "2", "3", "4"].includes(standardSize)) {
-    return standardSize;
+    return { size: standardSize };
   }
 
   const extRow = MEN_EXTENDED.find((r) => r.size === `${standardSize}+`);
-  if (!extRow) return standardSize;
+  if (!extRow) return { size: standardSize };
 
   const round1 = (v: number) => Math.round(v * 10) / 10;
 
@@ -115,9 +115,9 @@ function toExtendedMenSize(
     secondaryValue: number | undefined,
     standardRange: [number, number] | undefined,
     extendedRange: [number, number] | undefined
-  ): boolean => {
+  ): { useExtended: boolean; secondary?: number; cutoff?: number } => {
     if (secondaryValue === undefined || !standardRange || !extendedRange) {
-      return false;
+      return { useExtended: false };
     }
 
     // Secondary measurements are evaluated with one-decimal precision.
@@ -130,25 +130,51 @@ function toExtendedMenSize(
     if (extendedMin > standardMax) {
       const gap = extendedMin - standardMax;
       const cutoff = round1(standardMax + gap / 3);
-      return secondary > cutoff;
+      return { useExtended: secondary > cutoff, secondary, cutoff };
     }
 
-    // If there is overlap/no gap, standard PDF border rule applies.
-    return secondary >= extendedMin;
+    // If there is overlap/no gap, border rule applies.
+    return { useExtended: secondary >= extendedMin, secondary, cutoff: extendedMin };
   };
 
   if (type === "top") {
-    if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
-      return extRow.size;
+    const decision = shouldUseExtendedFromSecondary(
+      input.height,
+      standardRow.height,
+      extRow.height
+    );
+    if (decision.useExtended) {
+      return {
+        size: extRow.size,
+        extendedReason: {
+          secondary: "height",
+          value: decision.secondary!,
+          cutoff: decision.cutoff!,
+          baseSize: standardSize,
+        },
+      };
     }
-    return standardSize;
+    return { size: standardSize };
   }
 
   // Bottom: primary is hips; height decides if + applies.
-  if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
-    return extRow.size;
+  const decision = shouldUseExtendedFromSecondary(
+    input.height,
+    standardRow.height,
+    extRow.height
+  );
+  if (decision.useExtended) {
+    return {
+      size: extRow.size,
+      extendedReason: {
+        secondary: "height",
+        value: decision.secondary!,
+        cutoff: decision.cutoff!,
+        baseSize: standardSize,
+      },
+    };
   }
-  return standardSize;
+  return { size: standardSize };
 }
 
 function getMenSize(type: ClothingType, input: SizeInput): SizeResult {
@@ -165,8 +191,8 @@ function getMenSize(type: ClothingType, input: SizeInput): SizeResult {
       "chest",
       input.chest
     );
-    const finalSize = toExtendedMenSize(row, type, input);
-    return buildResult(finalSize, onBorder, outOfRange, "chest", isTop);
+    const extended = toExtendedMenSize(row, type, input);
+    return buildResult(extended.size, onBorder, outOfRange, "chest", isTop, extended.extendedReason);
   }
 
   if (input.hips === undefined) {
@@ -179,8 +205,8 @@ function getMenSize(type: ClothingType, input: SizeInput): SizeResult {
     "hips",
     input.hips
   );
-  const finalSize = toExtendedMenSize(row, type, input);
-  return buildResult(finalSize, onBorder, outOfRange, "hips", isTop);
+  const extended = toExtendedMenSize(row, type, input);
+  return buildResult(extended.size, onBorder, outOfRange, "hips", isTop, extended.extendedReason);
 }
 
 function getWomenSize(type: ClothingType, input: SizeInput): SizeResult {
@@ -362,7 +388,8 @@ function buildResult(
   onBorder: boolean,
   outOfRange: "below" | "above" | false,
   primaryMeasurement: string,
-  isTop: boolean
+  isTop: boolean,
+  extendedReason?: { secondary: "height" | "hips"; value: number; cutoff: number; baseSize: string }
 ): SizeResult {
   let note: string;
 
@@ -375,6 +402,10 @@ function buildResult(
   } else {
     const garment = isTop ? "top" : "bottom";
     note = `Recommended ${garment} size based on ${primaryMeasurement}.`;
+  }
+
+  if (extendedReason) {
+    note += ` Extended size chosen because ${extendedReason.secondary} ${extendedReason.value} cm exceeded cutoff ${extendedReason.cutoff} cm for size ${extendedReason.baseSize}.`;
   }
 
   return { size, onBorder, note };

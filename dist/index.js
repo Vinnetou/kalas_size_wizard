@@ -1,5 +1,6 @@
 // src/tables.ts
 var MEN_STANDARD = [
+  { size: "0", height: [0, 160], chest: [80, 84], waist: [0, 72], hips: [81, 85] },
   { size: "1", height: [160, 165], chest: [84, 88], waist: [72, 76], hips: [85, 89] },
   { size: "2", height: [165, 170], chest: [88, 92], waist: [76, 80], hips: [89, 93] },
   { size: "3", height: [170, 175], chest: [92, 96], waist: [80, 84], hips: [93, 97] },
@@ -16,7 +17,8 @@ var MEN_EXTENDED = [
   { size: "4+", height: [190, 195], chest: [96, 100], waist: [84, 88], hips: [97, 101] }
 ];
 var WOMEN = [
-  { size: "1", height: [156, 160], chest: [85, 86], waist: [64, 68], hips: [86, 90] },
+  { size: "0", height: [0, 156], chest: [78, 82], waist: [0, 64], hips: [82, 86] },
+  { size: "1", height: [156, 160], chest: [82, 86], waist: [64, 68], hips: [86, 90] },
   { size: "2", height: [160, 164], chest: [86, 90], waist: [68, 72], hips: [90, 94] },
   { size: "3", height: [164, 168], chest: [90, 94], waist: [72, 76], hips: [94, 98] },
   { size: "4", height: [168, 172], chest: [94, 98], waist: [76, 80], hips: [98, 102] },
@@ -97,14 +99,14 @@ function matchRow(rows, primaryKey, primaryValue, secondaryKey, secondaryValue) 
 function toExtendedMenSize(standardRow, type, input) {
   const standardSize = standardRow.size;
   if (!["1", "2", "3", "4"].includes(standardSize)) {
-    return standardSize;
+    return { size: standardSize };
   }
   const extRow = MEN_EXTENDED.find((r) => r.size === `${standardSize}+`);
-  if (!extRow) return standardSize;
+  if (!extRow) return { size: standardSize };
   const round1 = (v) => Math.round(v * 10) / 10;
   const shouldUseExtendedFromSecondary = (secondaryValue, standardRange, extendedRange) => {
     if (secondaryValue === void 0 || !standardRange || !extendedRange) {
-      return false;
+      return { useExtended: false };
     }
     const secondary = round1(secondaryValue);
     const standardMax = standardRange[1];
@@ -112,20 +114,46 @@ function toExtendedMenSize(standardRow, type, input) {
     if (extendedMin > standardMax) {
       const gap = extendedMin - standardMax;
       const cutoff = round1(standardMax + gap / 3);
-      return secondary > cutoff;
+      return { useExtended: secondary > cutoff, secondary, cutoff };
     }
-    return secondary >= extendedMin;
+    return { useExtended: secondary >= extendedMin, secondary, cutoff: extendedMin };
   };
   if (type === "top") {
-    if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
-      return extRow.size;
+    const decision2 = shouldUseExtendedFromSecondary(
+      input.height,
+      standardRow.height,
+      extRow.height
+    );
+    if (decision2.useExtended) {
+      return {
+        size: extRow.size,
+        extendedReason: {
+          secondary: "height",
+          value: decision2.secondary,
+          cutoff: decision2.cutoff,
+          baseSize: standardSize
+        }
+      };
     }
-    return standardSize;
+    return { size: standardSize };
   }
-  if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
-    return extRow.size;
+  const decision = shouldUseExtendedFromSecondary(
+    input.height,
+    standardRow.height,
+    extRow.height
+  );
+  if (decision.useExtended) {
+    return {
+      size: extRow.size,
+      extendedReason: {
+        secondary: "height",
+        value: decision.secondary,
+        cutoff: decision.cutoff,
+        baseSize: standardSize
+      }
+    };
   }
-  return standardSize;
+  return { size: standardSize };
 }
 function getMenSize(type, input) {
   const isTop = type === "top";
@@ -140,8 +168,8 @@ function getMenSize(type, input) {
       "chest",
       input.chest
     );
-    const finalSize2 = toExtendedMenSize(row2, type, input);
-    return buildResult(finalSize2, onBorder2, outOfRange2, "chest", isTop);
+    const extended2 = toExtendedMenSize(row2, type, input);
+    return buildResult(extended2.size, onBorder2, outOfRange2, "chest", isTop, extended2.extendedReason);
   }
   if (input.hips === void 0) {
     throw new Error(
@@ -153,8 +181,8 @@ function getMenSize(type, input) {
     "hips",
     input.hips
   );
-  const finalSize = toExtendedMenSize(row, type, input);
-  return buildResult(finalSize, onBorder, outOfRange, "hips", isTop);
+  const extended = toExtendedMenSize(row, type, input);
+  return buildResult(extended.size, onBorder, outOfRange, "hips", isTop, extended.extendedReason);
 }
 function getWomenSize(type, input) {
   const isTop = type === "top";
@@ -285,7 +313,7 @@ function getShoeCoverSize(input) {
     note: `Recommended shoe cover / sock size for EU shoe size ${v}.`
   };
 }
-function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop) {
+function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop, extendedReason) {
   let note;
   if (outOfRange === "below") {
     note = `Your ${primaryMeasurement} measurement is smaller than our smallest size. Size ${size} is the closest available.`;
@@ -296,6 +324,9 @@ function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop) {
   } else {
     const garment = isTop ? "top" : "bottom";
     note = `Recommended ${garment} size based on ${primaryMeasurement}.`;
+  }
+  if (extendedReason) {
+    note += ` Extended size chosen because ${extendedReason.secondary} ${extendedReason.value} cm exceeded cutoff ${extendedReason.cutoff} cm for size ${extendedReason.baseSize}.`;
   }
   return { size, onBorder, note };
 }
