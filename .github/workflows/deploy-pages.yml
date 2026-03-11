@@ -41,9 +41,10 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           rm -rf site
-          mkdir -p site/dist
+          mkdir -p site/dist site/pictures
           cp demo.html site/demo.html
           cp kalas_logo.png site/kalas_logo.png
+          cp -R pictures/* site/pictures/
           cp -R dist/* site/dist/
 
       - name: Configure Pages
