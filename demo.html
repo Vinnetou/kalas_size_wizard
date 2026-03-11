@@ -180,6 +180,109 @@
       line-height: 1.5;
     }
 
+    /* ---- measurement visual ---- */
+    #measurement-visual {
+      display: none;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      border: 1px solid #e4e4e7;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .mv-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .mv-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #71717a;
+    }
+    .mv-subtitle {
+      font-size: 0.78rem;
+      color: #475569;
+    }
+    .mv-stage {
+      display: grid;
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .mv-image {
+      width: 100%;
+      max-width: 820px;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .mv-glove-image {
+      width: 100%;
+      max-width: 180px;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      padding: 6px;
+    }
+    .mv-hidden {
+      display: none !important;
+    }
+    .mv-figure {
+      display: none;
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+    }
+    .mv-figure.active { display: block; }
+    .mv-body {
+      fill: #dbeafe;
+      stroke: #60a5fa;
+      stroke-width: 2;
+    }
+    .mv-meas {
+      stroke: #d40000;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+    .mv-height {
+      stroke: #0f766e;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+    }
+    .mv-label {
+      font-size: 11px;
+      font-weight: 700;
+      fill: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .mv-label.hidden,
+    .mv-meas.hidden,
+    .mv-height.hidden {
+      display: none;
+    }
+    .mv-measures {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+    .mv-chip {
+      background: #e2e8f0;
+      color: #1e293b;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
 
     /* ---- button ---- */
     button[type="submit"] {
@@ -381,6 +484,12 @@
       button[type="submit"] {
         font-size: 0.95rem;
       }
+      .mv-subtitle {
+        font-size: 0.72rem;
+      }
+      .mv-label {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
@@ -413,7 +522,7 @@
           <label for="t-shoes">Návleky na boty / Ponožky</label>
 
           <input type="radio" name="type" id="t-sleeves"     value="sleeves"     />
-          <label for="t-sleeves">Návleky na paže / kolena / nohy</label>
+          <label for="t-sleeves">Návleky na ruce / kolena / nohy</label>
         </div>
       </div>
 
@@ -434,8 +543,64 @@
 
       <!-- SLEEVE INFO -->
       <div id="sleeve-info">
-        <strong>Návleky na paže / ruce</strong> — stejná velikost jako váš dres/bunda. Použijte tabulku pro horní část.<br/>
+        <strong>Návleky na ruce</strong> — stejná velikost jako váš dres/bunda. Použijte tabulku pro horní část.<br/>
         <strong>Návleky na kolena / nohy</strong> — stejná velikost jako vaše kraťasy/lacláče. Použijte tabulku pro spodní část.
+      </div>
+
+      <div id="measurement-visual">
+        <div class="mv-head">
+          <div class="mv-title">Kde správně měřit</div>
+          <div id="mv-subtitle" class="mv-subtitle"></div>
+        </div>
+        <div class="mv-stage">
+          <svg id="mv-men" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
+            <ellipse class="mv-body" cx="180" cy="36" rx="24" ry="22"></ellipse>
+            <path class="mv-body" d="M120 84 L140 62 L220 62 L240 84 L230 188 L130 188 Z"></path>
+            <rect class="mv-body" x="130" y="186" width="34" height="56" rx="12"></rect>
+            <rect class="mv-body" x="196" y="186" width="34" height="56" rx="12"></rect>
+            <line class="mv-height" data-meas="height" x1="72" y1="14" x2="72" y2="244"></line>
+            <line class="mv-meas" data-meas="chest" x1="138" y1="100" x2="222" y2="100"></line>
+            <line class="mv-meas" data-meas="waist" x1="136" y1="132" x2="224" y2="132"></line>
+            <line class="mv-meas" data-meas="hips" x1="132" y1="164" x2="228" y2="164"></line>
+            <text class="mv-label" data-meas="height" x="42" y="130" transform="rotate(-90 42,130)">Vyska</text>
+            <text class="mv-label" data-meas="chest" x="234" y="104">Hrudnik</text>
+            <text class="mv-label" data-meas="waist" x="234" y="136">Pas</text>
+            <text class="mv-label" data-meas="hips" x="234" y="168">Boky</text>
+          </svg>
+
+          <svg id="mv-women" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
+            <ellipse class="mv-body" cx="180" cy="36" rx="22" ry="21"></ellipse>
+            <path class="mv-body" d="M132 84 L146 64 L214 64 L228 84 L216 152 L238 188 L122 188 L144 152 Z"></path>
+            <rect class="mv-body" x="142" y="186" width="28" height="56" rx="12"></rect>
+            <rect class="mv-body" x="190" y="186" width="28" height="56" rx="12"></rect>
+            <line class="mv-height" data-meas="height" x1="78" y1="14" x2="78" y2="244"></line>
+            <line class="mv-meas" data-meas="chest" x1="146" y1="102" x2="214" y2="102"></line>
+            <line class="mv-meas" data-meas="waist" x1="152" y1="132" x2="208" y2="132"></line>
+            <line class="mv-meas" data-meas="hips" x1="136" y1="164" x2="224" y2="164"></line>
+            <text class="mv-label" data-meas="height" x="48" y="130" transform="rotate(-90 48,130)">Vyska</text>
+            <text class="mv-label" data-meas="chest" x="232" y="106">Hrudnik</text>
+            <text class="mv-label" data-meas="waist" x="232" y="136">Pas</text>
+            <text class="mv-label" data-meas="hips" x="232" y="168">Boky</text>
+          </svg>
+
+          <svg id="mv-children" class="mv-figure" viewBox="0 0 360 260" aria-hidden="true">
+            <ellipse class="mv-body" cx="180" cy="44" rx="19" ry="17"></ellipse>
+            <path class="mv-body" d="M144 86 L156 70 L204 70 L216 86 L208 168 L152 168 Z"></path>
+            <rect class="mv-body" x="156" y="166" width="20" height="58" rx="10"></rect>
+            <rect class="mv-body" x="184" y="166" width="20" height="58" rx="10"></rect>
+            <line class="mv-height" data-meas="height" x1="92" y1="20" x2="92" y2="230"></line>
+            <line class="mv-meas" data-meas="chest" x1="156" y1="104" x2="204" y2="104"></line>
+            <line class="mv-meas" data-meas="waist" x1="156" y1="132" x2="204" y2="132"></line>
+            <line class="mv-meas" data-meas="hips" x1="152" y1="156" x2="208" y2="156"></line>
+            <text class="mv-label" data-meas="height" x="62" y="126" transform="rotate(-90 62,126)">Vyska</text>
+            <text class="mv-label" data-meas="chest" x="218" y="108">Hrudnik</text>
+            <text class="mv-label" data-meas="waist" x="218" y="136">Pas</text>
+            <text class="mv-label" data-meas="hips" x="218" y="160">Boky</text>
+          </svg>
+
+          <img id="mv-glove-image" class="mv-glove-image mv-hidden" src="./pictures/glove_measure.png" alt="Měření obvodu ruky" />
+          <div id="mv-measures" class="mv-measures"></div>
+        </div>
       </div>
 
       <!-- MEASUREMENTS -->
@@ -505,6 +670,10 @@ const borderBadge = document.getElementById("border-badge");
 const resultNote  = document.getElementById("result-note");
 const sleeveInfo  = document.getElementById("sleeve-info");
 const measField   = document.getElementById("measurements-field");
+const measurementVisual = document.getElementById("measurement-visual");
+const mvSubtitle = document.getElementById("mv-subtitle");
+const mvMeasures = document.getElementById("mv-measures");
+const mvGloveImage = document.getElementById("mv-glove-image");
 
 // ---- helpers -------------------------------------------------------------
 
@@ -544,6 +713,55 @@ function getFieldKeys() {
   return genderSchema[type] ?? [];
 }
 
+function updateMeasurementVisual() {
+  const gender = getVal("gender");
+  const type = getVal("type");
+
+  const show = type !== "shoe_covers";
+  measurementVisual.style.display = show ? "block" : "none";
+  if (!show) return;
+
+  const figures = {
+    men: document.getElementById("mv-men"),
+    women: document.getElementById("mv-women"),
+    children: document.getElementById("mv-children"),
+  };
+
+  Object.entries(figures).forEach(([key, el]) => {
+    el.classList.toggle("active", key === gender);
+  });
+
+  if (type === "gloves") {
+    Object.values(figures).forEach(el => el.classList.remove("active"));
+    mvGloveImage.classList.remove("mv-hidden");
+    mvSubtitle.textContent = "Rukavice - měřte obvod ruky (A).";
+    mvMeasures.innerHTML = '<span class="mv-chip">Obvod ruky (A)</span>';
+    return;
+  }
+
+  mvGloveImage.classList.add("mv-hidden");
+
+  const who = gender === "men" ? "Muži" : gender === "women" ? "Ženy" : "Děti";
+  mvSubtitle.textContent = `Aktivní měření pro: ${who}`;
+
+  const activeFigure = figures[gender] || figures.men;
+  const valid = gender === "children"
+    ? new Set(["height", "chest", "waist"])
+    : new Set(["height", "chest", "waist", "hips"]);
+
+  activeFigure.querySelectorAll("[data-meas]").forEach(el => {
+    const k = el.getAttribute("data-meas");
+    el.classList.toggle("hidden", !valid.has(k));
+  });
+
+  mvMeasures.innerHTML = Array.from(valid)
+    .map(key => {
+      const name = key === "height" ? "Výška" : key === "chest" ? "Hrudník" : key === "waist" ? "Pas" : "Boky";
+      return `<span class="mv-chip">${name}</span>`;
+    })
+    .join("");
+}
+
 
 function renderInputs() {
   const keys   = getFieldKeys();
@@ -552,6 +770,7 @@ function renderInputs() {
 
   sleeveInfo.style.display  = type === "sleeves" ? "block" : "none";
   measField.style.display   = (type === "sleeves" || keys.length === 0) ? "none" : "block";
+  updateMeasurementVisual();
 
   grid.innerHTML = "";
   keys.forEach(key => {
