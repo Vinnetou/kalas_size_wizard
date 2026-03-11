@@ -922,11 +922,6 @@ const VIZ = {
     chest: [{s:'1+',a:84,b:88},{s:'2+',a:88,b:92},{s:'3+',a:92,b:96},{s:'4+',a:96,b:100}],
     hips:  [{s:'1+',a:85,b:89},{s:'2+',a:89,b:93},{s:'3+',a:93,b:97},{s:'4+',a:97,b:101}],
   },
-  men_ext_decision: {
-    // Grey-zone decision cutoffs (first third stays normal):
-    // 1+: 168.3+, 2+: 173.3+, 3+: 178.3+, 4+: 183.3+
-    height:[{s:'1+',a:168.3,b:173.3},{s:'2+',a:173.3,b:178.3},{s:'3+',a:178.3,b:183.3},{s:'4+',a:183.3,b:195}],
-  },
   men_combined: {
     chest: [
       {s:'0',a:80,b:84},{s:'1',a:84,b:88},{s:'1+',a:84,b:88},{s:'2',a:88,b:92},{s:'2+',a:88,b:92},{s:'3',a:92,b:96},{s:'3+',a:92,b:96},{s:'4',a:96,b:100},{s:'4+',a:96,b:100},{s:'5',a:100,b:104},{s:'6',a:104,b:112},{s:'7',a:112,b:120},{s:'8',a:120,b:128},
@@ -992,9 +987,27 @@ function getVizConfigs(input, chosenSize) {
   if (gender === 'men') {
     const baseSize = String(chosenSize).replace('+', '');
     const finalIsPlus = String(chosenSize).includes('+');
+    const round1 = v => Math.round(v * 10) / 10;
+    const buildMenExtendedDecisionRows = (base) => {
+      const rows = VIZ.men_ext.height.map(r => ({ ...r }));
+      const target = `${base}+`;
+      const targetRow = rows.find(r => r.s === target);
+      const stdRow = VIZ.men_std.height.find(r => r.s === String(base));
+      if (!targetRow || !stdRow) return rows;
+
+      const standardMax = stdRow.b;
+      const extendedMin = targetRow.a;
+      const cutoff = extendedMin > standardMax
+        ? round1(standardMax + (extendedMin - standardMax) / 3)
+        : extendedMin;
+
+      // Apply grey-zone only to the chosen base size's extended variant.
+      targetRow.a = cutoff;
+      return rows;
+    };
     const pickOptionalViz = (value) => {
-      const extChosen = pickSizeForViz(VIZ.men_ext_decision.height, value);
-      return { rows: VIZ.men_ext_decision.height, chosenSize: extChosen };
+      const decisionRows = buildMenExtendedDecisionRows(baseSize);
+      return { rows: decisionRows, chosenSize };
     };
 
     if (type === 'top') {
