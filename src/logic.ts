@@ -1,4 +1,4 @@
-import type { SizeInput, SizeResult, Gender, ClothingType, MenFit } from "./types.js";
+import type { SizeInput, SizeResult, ClothingType } from "./types.js";
 import {
   MEN_STANDARD,
   MEN_EXTENDED,
@@ -94,11 +94,96 @@ function matchRow(
 // Category-specific handlers
 // ---------------------------------------------------------------------------
 
-function getAdultSize(
-  rows: SizeRow[],
+function toExtendedMenSize(
+  standardRow: SizeRow,
   type: ClothingType,
   input: SizeInput
-): SizeResult {
+): string {
+  const standardSize = standardRow.size;
+
+  // Only sizes 1-4 have extended (+) variants.
+  if (!["1", "2", "3", "4"].includes(standardSize)) {
+    return standardSize;
+  }
+
+  const extRow = MEN_EXTENDED.find((r) => r.size === `${standardSize}+`);
+  if (!extRow) return standardSize;
+
+  const round1 = (v: number) => Math.round(v * 10) / 10;
+
+  const shouldUseExtendedFromSecondary = (
+    secondaryValue: number | undefined,
+    standardRange: [number, number] | undefined,
+    extendedRange: [number, number] | undefined
+  ): boolean => {
+    if (secondaryValue === undefined || !standardRange || !extendedRange) {
+      return false;
+    }
+
+    // Secondary measurements are evaluated with one-decimal precision.
+    const secondary = round1(secondaryValue);
+    const standardMax = standardRange[1];
+    const extendedMin = extendedRange[0];
+
+    // If there is a gap between standard max and extended min, split it:
+    // first third stays standard, anything above that goes extended.
+    if (extendedMin > standardMax) {
+      const gap = extendedMin - standardMax;
+      const cutoff = round1(standardMax + gap / 3);
+      return secondary > cutoff;
+    }
+
+    // If there is overlap/no gap, standard PDF border rule applies.
+    return secondary >= extendedMin;
+  };
+
+  if (type === "top") {
+    if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
+      return extRow.size;
+    }
+    return standardSize;
+  }
+
+  // Bottom: primary is hips; height decides if + applies.
+  if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
+    return extRow.size;
+  }
+  return standardSize;
+}
+
+function getMenSize(type: ClothingType, input: SizeInput): SizeResult {
+  const isTop = type === "top";
+
+  if (isTop) {
+    if (input.chest === undefined) {
+      throw new Error(
+        "chest measurement is required for men top sizing (jerseys, jackets, vests)"
+      );
+    }
+    const { row, onBorder, outOfRange } = matchRow(
+      MEN_STANDARD,
+      "chest",
+      input.chest
+    );
+    const finalSize = toExtendedMenSize(row, type, input);
+    return buildResult(finalSize, onBorder, outOfRange, "chest", isTop);
+  }
+
+  if (input.hips === undefined) {
+    throw new Error(
+      "hips measurement is required for men bottom sizing (shorts, bibs)"
+    );
+  }
+  const { row, onBorder, outOfRange } = matchRow(
+    MEN_STANDARD,
+    "hips",
+    input.hips
+  );
+  const finalSize = toExtendedMenSize(row, type, input);
+  return buildResult(finalSize, onBorder, outOfRange, "hips", isTop);
+}
+
+function getWomenSize(type: ClothingType, input: SizeInput): SizeResult {
   const isTop = type === "top";
 
   if (isTop) {
@@ -108,29 +193,28 @@ function getAdultSize(
       );
     }
     const { row, onBorder, outOfRange } = matchRow(
-      rows,
+      WOMEN,
       "chest",
       input.chest,
       "height",
       input.height
     );
     return buildResult(row.size, onBorder, outOfRange, "chest", isTop);
-  } else {
-    // bottom
-    if (input.hips === undefined) {
-      throw new Error(
-        "hips measurement is required for adult bottom sizing (shorts, bibs)"
-      );
-    }
-    const { row, onBorder, outOfRange } = matchRow(
-      rows,
-      "hips",
-      input.hips,
-      "height",
-      input.height
-    );
-    return buildResult(row.size, onBorder, outOfRange, "hips", isTop);
   }
+
+  if (input.hips === undefined) {
+    throw new Error(
+      "hips measurement is required for adult bottom sizing (shorts, bibs)"
+    );
+  }
+  const { row, onBorder, outOfRange } = matchRow(
+    WOMEN,
+    "hips",
+    input.hips,
+    "height",
+    input.height
+  );
+  return buildResult(row.size, onBorder, outOfRange, "hips", isTop);
 }
 
 function getChildrenSize(type: ClothingType, input: SizeInput): SizeResult {
@@ -301,18 +385,6 @@ function buildResult(
 // ---------------------------------------------------------------------------
 
 /**
- * Select the correct sizing table for the given gender and fit.
- */
-function selectTable(
-  gender: Gender,
-  fit: MenFit
-): SizeRow[] {
-  if (gender === "men") return fit === "extended" ? MEN_EXTENDED : MEN_STANDARD;
-  if (gender === "women") return WOMEN;
-  return CHILDREN;
-}
-
-/**
  * Returns the recommended Kalas size for the given measurements and clothing type.
  *
  * @throws {Error} When required measurements are missing.
@@ -324,8 +396,8 @@ function selectTable(
  * getSize({ gender: 'men', type: 'top', chest: 96, height: 177 });
  * // → { size: '4', onBorder: false, note: 'Recommended top size based on chest.' }
  *
- * getSize({ gender: 'men', type: 'bottom', hips: 101 });
- * // → { size: '4', onBorder: true, note: '...falls exactly on the border...' }
+ * getSize({ gender: 'men', type: 'bottom', waist: 88 });
+ * // → { size: '5', onBorder: true, note: '...falls exactly on the border...' }
  *
  * getSize({ gender: 'women', type: 'top', chest: 90 });
  * // → { size: '3', onBorder: false, note: 'Recommended top size based on chest.' }
@@ -341,7 +413,7 @@ function selectTable(
  * ```
  */
 export function getSize(input: SizeInput): SizeResult {
-  const { gender, type, menFit = "standard" } = input;
+  const { gender, type } = input;
 
   if (type === "gloves") {
     return getGloveSize(input);
@@ -355,6 +427,9 @@ export function getSize(input: SizeInput): SizeResult {
     return getChildrenSize(type, input);
   }
 
-  const table = selectTable(gender, menFit);
-  return getAdultSize(table, type, input);
+  if (gender === "men") {
+    return getMenSize(type, input);
+  }
+
+  return getWomenSize(type, input);
 }

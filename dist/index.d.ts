@@ -20,9 +20,10 @@ type MenFit = "standard" | "extended";
  * Input measurements for size calculation. All values in cm except shoeSize (EU).
  * Which fields are required depends on the clothing type:
  *
- * - top (men/women): chest required, height optional (tiebreaker)
+ * - top (men/women): chest required, height optional
  * - top (children): height required, chest optional (tiebreaker)
- * - bottom (men/women): hips required, height optional (tiebreaker)
+ * - bottom (men): hips required, height optional (auto-selects 1+ to 4+)
+ * - bottom (women): hips required, height optional (tiebreaker)
  * - bottom (children): waist required
  * - gloves: handCircumference required
  * - shoe_covers: shoeSize required (EU)
@@ -43,8 +44,8 @@ interface SizeInput {
     /** EU shoe size (for shoe covers / socks) */
     shoeSize?: number;
     /**
-     * Men only: use standard sizes (1–8) or extended/prodloužené sizes (1+–4+).
-     * Defaults to "standard".
+     * Legacy input. Kept for backward compatibility; men extended sizes are
+     * selected automatically from secondary measurements.
      */
     menFit?: MenFit;
 }
@@ -75,8 +76,8 @@ interface SizeResult {
  * getSize({ gender: 'men', type: 'top', chest: 96, height: 177 });
  * // → { size: '4', onBorder: false, note: 'Recommended top size based on chest.' }
  *
- * getSize({ gender: 'men', type: 'bottom', hips: 101 });
- * // → { size: '4', onBorder: true, note: '...falls exactly on the border...' }
+ * getSize({ gender: 'men', type: 'bottom', waist: 88 });
+ * // → { size: '5', onBorder: true, note: '...falls exactly on the border...' }
  *
  * getSize({ gender: 'women', type: 'top', chest: 90 });
  * // → { size: '3', onBorder: false, note: 'Recommended top size based on chest.' }

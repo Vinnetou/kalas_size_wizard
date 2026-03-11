@@ -94,7 +94,69 @@ function matchRow(rows, primaryKey, primaryValue, secondaryKey, secondaryValue) 
   }
   return { row: closest, onBorder: false, outOfRange: false };
 }
-function getAdultSize(rows, type, input) {
+function toExtendedMenSize(standardRow, type, input) {
+  const standardSize = standardRow.size;
+  if (!["1", "2", "3", "4"].includes(standardSize)) {
+    return standardSize;
+  }
+  const extRow = MEN_EXTENDED.find((r) => r.size === `${standardSize}+`);
+  if (!extRow) return standardSize;
+  const round1 = (v) => Math.round(v * 10) / 10;
+  const shouldUseExtendedFromSecondary = (secondaryValue, standardRange, extendedRange) => {
+    if (secondaryValue === void 0 || !standardRange || !extendedRange) {
+      return false;
+    }
+    const secondary = round1(secondaryValue);
+    const standardMax = standardRange[1];
+    const extendedMin = extendedRange[0];
+    if (extendedMin > standardMax) {
+      const gap = extendedMin - standardMax;
+      const cutoff = round1(standardMax + gap / 3);
+      return secondary > cutoff;
+    }
+    return secondary >= extendedMin;
+  };
+  if (type === "top") {
+    if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
+      return extRow.size;
+    }
+    return standardSize;
+  }
+  if (shouldUseExtendedFromSecondary(input.height, standardRow.height, extRow.height)) {
+    return extRow.size;
+  }
+  return standardSize;
+}
+function getMenSize(type, input) {
+  const isTop = type === "top";
+  if (isTop) {
+    if (input.chest === void 0) {
+      throw new Error(
+        "chest measurement is required for men top sizing (jerseys, jackets, vests)"
+      );
+    }
+    const { row: row2, onBorder: onBorder2, outOfRange: outOfRange2 } = matchRow(
+      MEN_STANDARD,
+      "chest",
+      input.chest
+    );
+    const finalSize2 = toExtendedMenSize(row2, type, input);
+    return buildResult(finalSize2, onBorder2, outOfRange2, "chest", isTop);
+  }
+  if (input.hips === void 0) {
+    throw new Error(
+      "hips measurement is required for men bottom sizing (shorts, bibs)"
+    );
+  }
+  const { row, onBorder, outOfRange } = matchRow(
+    MEN_STANDARD,
+    "hips",
+    input.hips
+  );
+  const finalSize = toExtendedMenSize(row, type, input);
+  return buildResult(finalSize, onBorder, outOfRange, "hips", isTop);
+}
+function getWomenSize(type, input) {
   const isTop = type === "top";
   if (isTop) {
     if (input.chest === void 0) {
@@ -102,29 +164,28 @@ function getAdultSize(rows, type, input) {
         "chest measurement is required for adult top sizing (jerseys, jackets, vests)"
       );
     }
-    const { row, onBorder, outOfRange } = matchRow(
-      rows,
+    const { row: row2, onBorder: onBorder2, outOfRange: outOfRange2 } = matchRow(
+      WOMEN,
       "chest",
       input.chest,
       "height",
       input.height
     );
-    return buildResult(row.size, onBorder, outOfRange, "chest", isTop);
-  } else {
-    if (input.hips === void 0) {
-      throw new Error(
-        "hips measurement is required for adult bottom sizing (shorts, bibs)"
-      );
-    }
-    const { row, onBorder, outOfRange } = matchRow(
-      rows,
-      "hips",
-      input.hips,
-      "height",
-      input.height
-    );
-    return buildResult(row.size, onBorder, outOfRange, "hips", isTop);
+    return buildResult(row2.size, onBorder2, outOfRange2, "chest", isTop);
   }
+  if (input.hips === void 0) {
+    throw new Error(
+      "hips measurement is required for adult bottom sizing (shorts, bibs)"
+    );
+  }
+  const { row, onBorder, outOfRange } = matchRow(
+    WOMEN,
+    "hips",
+    input.hips,
+    "height",
+    input.height
+  );
+  return buildResult(row.size, onBorder, outOfRange, "hips", isTop);
 }
 function getChildrenSize(type, input) {
   const isTop = type === "top";
@@ -167,25 +228,41 @@ function getGloveSize(input) {
   if (input.handCircumference === void 0) {
     throw new Error("handCircumference is required for glove sizing");
   }
-  const v = input.handCircumference;
-  let matched = GLOVES.find(
+  const v = Math.round(input.handCircumference * 10) / 10;
+  if (input.gender === "children") {
+    const onBorder2 = v === 12;
+    const size = v < 12 ? "4" : "5";
+    return {
+      size,
+      onBorder: onBorder2,
+      note: onBorder2 ? `Hand circumference ${v} cm falls on the border between children glove sizes. The larger size ${size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`
+    };
+  }
+  const adultGloves = GLOVES.filter((g) => Number(g.size) >= 6);
+  const firstAdult = adultGloves[0];
+  if (v < firstAdult.handMin) {
+    return {
+      size: firstAdult.size,
+      onBorder: false,
+      note: `Hand circumference ${v} cm is below the adult range. Nearest adult size: ${firstAdult.size}.`
+    };
+  }
+  const matched = adultGloves.find(
     (g) => v >= g.handMin && (g.isLastRow ? true : v < g.handMax)
   );
   if (!matched) {
-    matched = GLOVES.find((g) => v >= g.handMin && v <= g.handMax);
-  }
-  if (!matched) {
-    matched = v < GLOVES[0].handMax ? GLOVES[0] : GLOVES[GLOVES.length - 1];
+    const fallback = adultGloves[adultGloves.length - 1];
     return {
-      size: matched.size,
+      size: fallback.size,
       onBorder: false,
-      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${matched.size}.`
+      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${fallback.size}.`
     };
   }
+  const onBorder = adultGloves.slice(1).some((g) => v === g.handMin);
   return {
     size: matched.size,
-    onBorder: false,
-    note: `Recommended glove size based on hand circumference ${v} cm.`
+    onBorder,
+    note: onBorder ? `Hand circumference ${v} cm falls on the border between two glove sizes. The larger size ${matched.size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`
   };
 }
 function getShoeCoverSize(input) {
@@ -222,13 +299,8 @@ function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop) {
   }
   return { size, onBorder, note };
 }
-function selectTable(gender, fit) {
-  if (gender === "men") return fit === "extended" ? MEN_EXTENDED : MEN_STANDARD;
-  if (gender === "women") return WOMEN;
-  return CHILDREN;
-}
 function getSize(input) {
-  const { gender, type, menFit = "standard" } = input;
+  const { gender, type } = input;
   if (type === "gloves") {
     return getGloveSize(input);
   }
@@ -238,8 +310,10 @@ function getSize(input) {
   if (gender === "children") {
     return getChildrenSize(type, input);
   }
-  const table = selectTable(gender, menFit);
-  return getAdultSize(table, type, input);
+  if (gender === "men") {
+    return getMenSize(type, input);
+  }
+  return getWomenSize(type, input);
 }
 export {
   getSize

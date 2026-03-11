@@ -4,10 +4,10 @@ const cases = [
   // Men tops
   { label: "Man, jersey, chest 96cm",              input: { gender: "men",      type: "top",         chest: 96 } },
   { label: "Man, jersey, chest 88cm (border)",     input: { gender: "men",      type: "top",         chest: 88 } },
-  { label: "Man, jersey, extended fit, chest 89cm",input: { gender: "men",      type: "top",         chest: 89, menFit: "extended" } },
+  { label: "Man, jersey, chest 89cm + height 181cm (auto +)", input: { gender: "men", type: "top", chest: 89, height: 181 } },
   // Men bottoms
   { label: "Man, bib shorts, hips 95cm",           input: { gender: "men",      type: "bottom",      hips: 95 } },
-  { label: "Man, bib shorts, hips 101cm (border)", input: { gender: "men",      type: "bottom",      hips: 101 } },
+  { label: "Man, bib shorts, hips 95 + height 186cm (auto +)", input: { gender: "men", type: "bottom", hips: 95, height: 186 } },
   // Women tops
   { label: "Woman, jersey, chest 92cm",            input: { gender: "women",    type: "top",         chest: 92 } },
   // Women bottoms

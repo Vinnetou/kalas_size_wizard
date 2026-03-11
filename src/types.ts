@@ -23,9 +23,10 @@ export type MenFit = "standard" | "extended";
  * Input measurements for size calculation. All values in cm except shoeSize (EU).
  * Which fields are required depends on the clothing type:
  *
- * - top (men/women): chest required, height optional (tiebreaker)
+ * - top (men/women): chest required, height optional
  * - top (children): height required, chest optional (tiebreaker)
- * - bottom (men/women): hips required, height optional (tiebreaker)
+ * - bottom (men): hips required, height optional (auto-selects 1+ to 4+)
+ * - bottom (women): hips required, height optional (tiebreaker)
  * - bottom (children): waist required
  * - gloves: handCircumference required
  * - shoe_covers: shoeSize required (EU)
@@ -46,8 +47,8 @@ export interface SizeInput {
   /** EU shoe size (for shoe covers / socks) */
   shoeSize?: number;
   /**
-   * Men only: use standard sizes (1–8) or extended/prodloužené sizes (1+–4+).
-   * Defaults to "standard".
+   * Legacy input. Kept for backward compatibility; men extended sizes are
+   * selected automatically from secondary measurements.
    */
   menFit?: MenFit;
 }

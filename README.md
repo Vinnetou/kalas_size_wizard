@@ -41,8 +41,15 @@ All measurements in cm. Ranges are **inclusive** on both ends.
 | 7 | 195–200 | 112–120 | 100–108 | 113–121 |
 | 8 | 195–200 | 120–128 | 108–116 | 121–129 |
 
-**Top (jersey/jacket):** primary key is **chest**. Height is a tiebreaker only.
-**Bottom (shorts/bibs):** primary key is **hips**. Height is a tiebreaker only.
+**Top (jersey/jacket):** primary key is **chest**.
+**Bottom (shorts/bibs):** primary key is **hips**.
+
+For men, extended/prodloužené sizes are selected **automatically**:
+
+- If the primary size is 1–4 and the secondary measurement indicates a longer/taller build, the recommendation switches to `+` size (`1+` to `4+`).
+- Men top: secondary measurement is **height**.
+- Men bottom: secondary measurement is **height**.
+- If secondary measurement is missing, the result stays standard (`1`-`8`).
 
 ---
 
@@ -57,7 +64,10 @@ For men with a taller build. Same chest/waist/hips ranges as standard sizes 1–
 | 3+ | 185–190 | 92–96 | 80–84 | 93–97 |
 | 4+ | 190–195 | 96–100 | 84–88 | 97–101 |
 
-Use the extended series when the rider's height puts them in a larger standard size than their chest/waist measurement does. For example: chest 92 cm (standard size 3) but height 187 cm (standard size 6) → extended size 3+.
+The extended series is derived automatically from the standard size number (1–4) plus secondary measurement:
+
+- Top example: chest 92 cm (size 3) + height 187 cm → `3+`.
+- Bottom example: hips 95 cm (size 3) + height 186 cm → `3+`.
 
 ---
 
@@ -133,8 +143,13 @@ The measurement falls within exactly one size's range → that size is returned.
 #### 2. Border between two sizes
 The measurement falls on a shared boundary (e.g. chest = 92 cm, which is both the upper limit of size 2 and the lower limit of size 3) → **the larger size is always chosen**, per the PDF recommendation.
 
-#### 3. Height as tiebreaker (adults and children tops)
-Height is never the sole deciding factor for adult tops/bottoms. It is used only when the primary measurement (chest or hips) alone does not produce a unique match. For children's tops, height is the *primary* key but can be overridden by chest as described above.
+#### 3. Secondary measurement for men's extended sizing
+For men only, if primary size is 1-4 and the secondary measurement is in (or above) the extended range, recommendation switches to `+` size:
+
+- Top: chest decides base size, **height** can switch to `+`.
+- Bottom: hips decide base size, **height** can switch to `+`.
+
+If the secondary measurement is missing, standard size is returned.
 
 #### 4. Out of range — too small
 The measurement is below the smallest size's range → the **smallest available size** is returned with a note.
@@ -158,7 +173,6 @@ getSize(input: SizeInput): SizeResult
 {
   gender:             'men' | 'women' | 'children';
   type:               'top' | 'bottom' | 'gloves' | 'shoe_covers';
-  menFit?:            'standard' | 'extended';  // men only, default: 'standard'
   chest?:             number;  // cm
   waist?:             number;  // cm
   hips?:              number;  // cm
@@ -189,8 +203,8 @@ getSize({ gender: 'men', type: 'top', chest: 96, height: 177 });
 getSize({ gender: 'men', type: 'bottom', hips: 101 });
 // { size: '5', onBorder: true, note: '...falls exactly on the border...' }
 
-// Men's jersey, extended fit, chest 92 cm → size 3+
-getSize({ gender: 'men', type: 'top', chest: 92, menFit: 'extended' });
+// Men's jersey, chest 92 cm + height 187 cm → auto-extended size 3+
+getSize({ gender: 'men', type: 'top', chest: 92, height: 187 });
 // { size: '3+', onBorder: false, note: 'Recommended top size based on chest.' }
 
 // Women's jersey, chest 90 cm → size 3

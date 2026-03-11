@@ -40,7 +40,7 @@ describe("getSize – men bottoms", () => {
     expect(r.size).toBe("3");
   });
 
-  it("border hips 101 → size 5 (larger)", () => {
+  it("border hips 101 -> size 5 (larger)", () => {
     const r = getSize({ gender: "men", type: "bottom", hips: 101 });
     expect(r.size).toBe("5");
     expect(r.onBorder).toBe(true);
@@ -51,15 +51,54 @@ describe("getSize – men bottoms", () => {
   });
 });
 
-describe("getSize – men extended fit", () => {
-  it("returns 2+ for chest 89 and extended fit", () => {
-    const r = getSize({ gender: "men", type: "top", chest: 89, menFit: "extended" });
+describe("getSize – men auto-extended", () => {
+  it("returns 2+ for chest 89 when height is in extended range", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 89, height: 181 });
     expect(r.size).toBe("2+");
   });
 
-  it("standard fit with same chest returns 2", () => {
-    const r = getSize({ gender: "men", type: "top", chest: 89, menFit: "standard" });
+  it("returns standard size when secondary measure is missing", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 89 });
     expect(r.size).toBe("2");
+  });
+
+  it("returns 3+ for hips 95 when height is in extended range", () => {
+    const r = getSize({ gender: "men", type: "bottom", hips: 95, height: 186 });
+    expect(r.size).toBe("3+");
+  });
+
+  it("returns 4+ for hips 98 when height is above extended range", () => {
+    const r = getSize({ gender: "men", type: "bottom", hips: 98, height: 196 });
+    expect(r.size).toBe("4+");
+  });
+
+  it("keeps standard bottom size in first third of grey zone", () => {
+    // For men size 3 bottom by hips: standard height max=175, extended min=185.
+    // Cutoff = 175 + (185-175)/3 = 178.3.
+    const r = getSize({ gender: "men", type: "bottom", hips: 95, height: 178.3 });
+    expect(r.size).toBe("3");
+  });
+
+  it("switches bottom to extended above grey-zone cutoff", () => {
+    const r = getSize({ gender: "men", type: "bottom", hips: 95, height: 178.4 });
+    expect(r.size).toBe("3+");
+  });
+
+  it("keeps standard size in first third of top grey zone", () => {
+    // For men size 1 top: standard height max=165, extended min=175.
+    // Cutoff = 165 + (175-165)/3 = 168.3 (rounded to one decimal).
+    const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.3 });
+    expect(r.size).toBe("1");
+  });
+
+  it("switches to extended above top grey-zone cutoff", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.4 });
+    expect(r.size).toBe("1+");
+  });
+
+  it("uses one-decimal precision for secondary measure in top grey zone", () => {
+    const r = getSize({ gender: "men", type: "top", chest: 86, height: 168.36 });
+    expect(r.size).toBe("1+");
   });
 });
 

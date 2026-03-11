@@ -168,27 +168,6 @@
       padding-left: 88px;
     }
 
-    /* ---- extended fit toggle ---- */
-    #extended-wrap {
-      display: none;
-      margin-top: -10px;
-      margin-bottom: 22px;
-    }
-    #extended-wrap label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      color: #3f3f46;
-    }
-    #extended-wrap input[type="checkbox"] { width: 16px; height: 16px; accent-color: #d40000; }
-    #extended-wrap .ext-desc {
-      font-size: 0.78rem;
-      color: #71717a;
-      margin-top: 2px;
-    }
-
     /* ---- sleeve info ---- */
     #sleeve-info {
       display: none;
@@ -453,17 +432,6 @@
         </div>
       </div>
 
-      <!-- EXTENDED FIT (men only) -->
-      <div id="extended-wrap">
-        <label>
-          <input type="checkbox" id="extended-fit" />
-          <span>
-            Prodloužené velikosti<br/>
-            <span class="ext-desc">Vyšší postava — stejné míry hrudníku/pasu jako u velikostí 1–4, ale delší trup/nohy</span>
-          </span>
-        </label>
-      </div>
-
       <!-- SLEEVE INFO -->
       <div id="sleeve-info">
         <strong>Návleky na paže / ruce</strong> — stejná velikost jako váš dres/bunda. Použijte tabulku pro horní část.<br/>
@@ -513,7 +481,7 @@ const FIELDS = {
 const SCHEMA = {
   men: {
     top:    ["chest", "height"],
-    bottom: ["hips",  "height"],
+    bottom: ["hips", "height"],
   },
   women: {
     top:    ["chest", "height"],
@@ -535,8 +503,6 @@ const resultBox   = document.getElementById("result");
 const resultSize  = document.getElementById("result-size");
 const borderBadge = document.getElementById("border-badge");
 const resultNote  = document.getElementById("result-note");
-const extWrap     = document.getElementById("extended-wrap");
-const extCheck    = document.getElementById("extended-fit");
 const sleeveInfo  = document.getElementById("sleeve-info");
 const measField   = document.getElementById("measurements-field");
 
@@ -547,7 +513,7 @@ const measField   = document.getElementById("measurements-field");
 const PLACEHOLDER_VALS = {
   chest:             { men: 106, women: 100, children: 67  },
   hips:              { men: 107, women: 102               },
-  waist:             {                       children: 61  },
+  waist:             { men: 90,  women: 76, children: 61  },
   height:            { men: 180, women: 170, children: 133 },
   height_required:   { men: 180, women: 170, children: 133 },
   handCircumference: { men: 18,  women: 18,  children: 18  },
@@ -626,20 +592,11 @@ function renderInputs() {
   resultBox.style.display = "none";
 }
 
-function toggleExtended() {
-  const gender = getVal("gender");
-  const type   = getVal("type");
-  const show   = gender === "men" && (type === "top" || type === "bottom");
-  extWrap.style.display = show ? "block" : "none";
-  if (!show) extCheck.checked = false;
-}
-
 // ---- event listeners -----------------------------------------------------
 
 document.querySelectorAll('[name="type"], [name="gender"]').forEach(el => {
   el.addEventListener("change", () => {
     renderInputs();
-    toggleExtended();
   });
 });
 
@@ -729,15 +686,16 @@ const VIZ = {
   shoe_covers: [{s:'35-36',a:35,b:36},{s:'37-39',a:37,b:39},{s:'40-42',a:40,b:42},{s:'43-45',a:43,b:45},{s:'46-48',a:46,b:48}],
 };
 
-function getVizConfigs(input) {
-  const { gender, type, menFit = 'standard' } = input;
+function getVizConfigs(input, chosenSize) {
+  const { gender, type } = input;
   if (type === 'gloves') {
     const rows = gender === 'children' ? VIZ.gloves_children : VIZ.gloves_adult;
     return [{ rows, value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
   }
   if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: 'Velikost boty' }];
+  const useMenExtended = gender === 'men' && typeof chosenSize === 'string' && chosenSize.includes('+');
   const tbl = gender === 'children'                    ? VIZ.children
-            : gender === 'men' && menFit === 'extended' ? VIZ.men_ext
+            : useMenExtended                            ? VIZ.men_ext
             : gender === 'men'                          ? VIZ.men_std
             : VIZ.women;
   if (gender === 'children') {
@@ -751,7 +709,8 @@ function getVizConfigs(input) {
     return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: 'Obvod pasu' }];
   }
   if (type === 'top') return [{ rows: tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku' }];
-  return                     [{ rows: tbl.hips,  value: input.hips,  unit: 'cm', label: 'Obvod boků' }];
+  if (gender === 'men') return [{ rows: tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků' }];
+  return [{ rows: tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků' }];
 }
 
 function buildVizHtml(rows, value, chosenSize, unit, label) {
@@ -830,15 +789,21 @@ form.addEventListener("submit", e => {
     }
   });
 
-  if (gender === "men" && extCheck.checked) {
-    input.menFit = "extended";
-  }
-
   // Round measurements before calculation:
-  // body measurements → nearest whole cm; shoe size → nearest whole EU number
+  // - primary body measurements stay whole cm
+  // - men secondary measurements (top: height, bottom: height) keep 1 decimal
+  // - gloves keep 1 decimal
+  // - shoe size rounds to nearest whole EU number
   const calc = { ...input };
-  ["chest", "hips", "waist", "height"].forEach(k => {
-    if (calc[k] !== undefined) calc[k] = Math.round(calc[k]);
+  ["chest", "waist", "height", "hips"].forEach(k => {
+    if (calc[k] === undefined) return;
+    const isMenSecondaryTop = gender === "men" && type === "top" && k === "height";
+    const isMenSecondaryBottom = gender === "men" && type === "bottom" && k === "height";
+    if (isMenSecondaryTop || isMenSecondaryBottom) {
+      calc[k] = Math.round(calc[k] * 10) / 10;
+    } else {
+      calc[k] = Math.round(calc[k]);
+    }
   });
   if (calc.handCircumference !== undefined) {
     calc.handCircumference = Math.round(calc.handCircumference * 10) / 10;
@@ -862,7 +827,7 @@ form.addEventListener("submit", e => {
     }
 
     // Out-of-range warning + proximity viz (using rounded values)
-    const vizCfgs = getVizConfigs(calc);
+    const vizCfgs = getVizConfigs(calc, result.size);
     const anyOutside = vizCfgs.some(c => c.value !== undefined
       && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
     if (anyOutside) {
@@ -893,7 +858,6 @@ form.addEventListener("submit", e => {
 
 // ---- init ----------------------------------------------------------------
 renderInputs();
-toggleExtended();
 </script>
 </body>
 </html>
