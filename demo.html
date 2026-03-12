@@ -30,11 +30,34 @@
       background: #fff;
       padding: 14px 28px 12px;
       border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
     .card-logo img {
       height: 38px;
       width: auto;
       display: block;
+    }
+    .lang-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: #52525b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .lang-control select {
+      border: 1px solid #d4d4d8;
+      border-radius: 6px;
+      background: #fff;
+      color: #27272a;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      font-weight: 600;
     }
 
     .card-header {
@@ -528,6 +551,9 @@
 <div class="card">
   <div class="card-logo">
     <img src="./kalas_logo.png" alt="Kalas" />
+    <div class="lang-control">
+      <select id="lang-select" aria-label="Language selector"></select>
+    </div>
   </div>
   <div class="card-header">
     <h1>Kalkulačka velikosti</h1>
@@ -643,16 +669,225 @@
 <script type="module">
 import { getSize } from "./dist/index.js";
 
+const I18N = {
+  cs: {
+    "language.label": "Jazyk",
+    "language.cs": "Čeština",
+    "language.en": "English",
+    "meta.title": "Kalkulačka velikosti",
+    "header.title": "Kalkulačka velikosti",
+    "header.subtitle": "Zadejte své míry pro zjištění správné velikosti",
+    "section.type": "Co hledáte?",
+    "section.gender": "Pro koho?",
+    "section.measurements": "Vaše míry",
+    "button.submit": "Zjistit velikost",
+    "type.top": "Dres / Bunda / Vesta",
+    "type.skinsuit": "Kombinéza",
+    "type.bottom": "Kraťasy / Lacláče",
+    "type.gloves": "Rukavice",
+    "type.shoe_covers": "Návleky na boty / Ponožky",
+    "type.sleeves": "Návleky na ruce / kolena / nohy",
+    "gender.men": "Muži",
+    "gender.women": "Ženy",
+    "gender.children": "Děti",
+    "sleeves.info": "<strong>Návleky na ruce</strong> — stejná velikost jako váš dres/bunda. Použijte tabulku pro horní část.<br/><strong>Návleky na kolena / nohy</strong> — stejná velikost jako vaše kraťasy/lacláče. Použijte tabulku pro spodní část.",
+    "field.chest": "Obvod hrudníku",
+    "field.hips": "Obvod boků",
+    "field.waist": "Obvod pasu",
+    "field.height": "Výška",
+    "field.handCircumference": "Obvod ruky",
+    "field.shoeSize": "Velikost boty",
+    "input.required": "Povinné",
+    "input.optional": "Volitelné",
+    "result.label": "Doporučená velikost",
+    "result.borderBadge": "Na hranici dvou velikostí — doporučujeme větší",
+    "result.invalidInput": "Zkontrolujte prosím svá měření a zkuste to znovu.",
+    "result.secondaryNoEffect": "Sekundární míra (výška) neměla vliv na finální doporučení velikosti.",
+    "warn.outOfRange": "Zadaná hodnota ({label}: {value} {unit}) je mimo rozsah naší tabulky — zobrazujeme nejbližší dostupnou velikost.",
+    "measurement.where": "Kde správně měřit",
+    "measurement.chest": "Obvod hrudníku",
+    "measurement.hips": "Obvod boků",
+    "measurement.waist": "Obvod pasu",
+    "measurement.height": "Výška",
+    "measurement.handCircumference": "Obvod ruky",
+    "chip.chest": "Hrudník",
+    "chip.hips": "Boky",
+    "chip.waist": "Pas",
+    "chip.height": "Výška",
+    "viz.finalSize": "Výsledná velikost",
+    "viz.position": "Poloha vaší míry — {label}",
+    "viz.recommended": "Doporučeno: {size}",
+    "viz.sizeRange": "Velikost {size}: {min}–{max} {unit}",
+    "measurementKey.chest": "obvod hrudníku",
+    "measurementKey.hips": "obvod boků",
+    "measurementKey.waist": "obvod pasu",
+    "measurementKey.height": "výška",
+    "garment.top": "horního oblečení",
+    "garment.bottom": "spodního oblečení",
+    "garment.skinsuit": "kombinézy",
+    "result.recommended": "Doporučená velikost {garment} na základě: {measurement}.",
+    "result.border": "Vaše míra ({measurement}) leží přesně na hranici dvou velikostí. Doporučujeme větší velikost {size}.",
+    "result.outOfRange.below": "Vaše míra ({measurement}) je menší než nejmenší dostupná velikost. Nejbližší velikost: {size}.",
+    "result.outOfRange.above": "Vaše míra ({measurement}) je větší než největší dostupná velikost. Nejbližší velikost: {size}.",
+    "result.extendedReason": "Prodloužená velikost byla zvolena na základě sekundární míry ({secondary}), protože hodnota {value} cm překročila hranici {cutoff} cm pro velikost {baseSize}.",
+    "result.gloves.recommended": "Doporučená velikost rukavic na základě obvodu ruky {value} cm.",
+    "result.gloves.children.border": "Obvod ruky {value} cm leží na hranici dětských velikostí rukavic. Doporučujeme větší velikost {size}.",
+    "result.gloves.belowAdult": "Obvod ruky {value} cm je pod rozsahem dospělých velikostí. Nejbližší dospělá velikost: {size}.",
+    "result.gloves.outOfRange": "Obvod ruky {value} cm je mimo standardní rozsah. Nejbližší velikost: {size}.",
+    "result.gloves.border": "Obvod ruky {value} cm leží na hranici dvou velikostí rukavic. Doporučujeme větší velikost {size}.",
+    "result.shoe.recommended": "Doporučená velikost návleků / ponožek pro velikost boty EU {value}.",
+    "result.shoe.outOfRange": "Velikost boty EU {value} je mimo standardní rozsah. Nejbližší velikost: {size}.",
+  },
+  en: {
+    "language.label": "Language",
+    "language.cs": "Czech",
+    "language.en": "English",
+    "meta.title": "Size Calculator",
+    "header.title": "Size Calculator",
+    "header.subtitle": "Enter your measurements to find the right size",
+    "section.type": "What are you looking for?",
+    "section.gender": "For whom?",
+    "section.measurements": "Your measurements",
+    "button.submit": "Find size",
+    "type.top": "Jersey / Jacket / Vest",
+    "type.skinsuit": "Skinsuit",
+    "type.bottom": "Shorts / Bibs",
+    "type.gloves": "Gloves",
+    "type.shoe_covers": "Shoe covers / Socks",
+    "type.sleeves": "Arm / Knee / Leg warmers",
+    "gender.men": "Men",
+    "gender.women": "Women",
+    "gender.children": "Children",
+    "sleeves.info": "<strong>Arm warmers</strong> — same size as your jersey/jacket. Use the top table.<br/><strong>Knee / leg warmers</strong> — same size as your shorts/bibs. Use the bottom table.",
+    "field.chest": "Chest circumference",
+    "field.hips": "Hip circumference",
+    "field.waist": "Waist circumference",
+    "field.height": "Height",
+    "field.handCircumference": "Hand circumference",
+    "field.shoeSize": "Shoe size",
+    "input.required": "Required",
+    "input.optional": "Optional",
+    "result.label": "Recommended size",
+    "result.borderBadge": "On a border between sizes — larger size is recommended",
+    "result.invalidInput": "Please check your measurements and try again.",
+    "result.secondaryNoEffect": "Secondary measurement (height) did not affect the final size recommendation.",
+    "warn.outOfRange": "Entered value ({label}: {value} {unit}) is out of our size table range — showing the nearest available size.",
+    "measurement.where": "How to measure correctly",
+    "measurement.chest": "Chest circumference",
+    "measurement.hips": "Hip circumference",
+    "measurement.waist": "Waist circumference",
+    "measurement.height": "Height",
+    "measurement.handCircumference": "Hand circumference",
+    "chip.chest": "Chest",
+    "chip.hips": "Hips",
+    "chip.waist": "Waist",
+    "chip.height": "Height",
+    "viz.finalSize": "Final size",
+    "viz.position": "Your measurement position — {label}",
+    "viz.recommended": "Recommended: {size}",
+    "viz.sizeRange": "Size {size}: {min}-{max} {unit}",
+    "measurementKey.chest": "chest circumference",
+    "measurementKey.hips": "hip circumference",
+    "measurementKey.waist": "waist circumference",
+    "measurementKey.height": "height",
+    "garment.top": "top clothing",
+    "garment.bottom": "bottom clothing",
+    "garment.skinsuit": "skinsuit",
+    "result.recommended": "Recommended size for {garment} based on: {measurement}.",
+    "result.border": "Your measurement ({measurement}) is exactly on the border between two sizes. The larger size {size} is recommended.",
+    "result.outOfRange.below": "Your measurement ({measurement}) is below our smallest size. Nearest size: {size}.",
+    "result.outOfRange.above": "Your measurement ({measurement}) is above our largest size. Nearest size: {size}.",
+    "result.extendedReason": "Extended size was selected based on the secondary measurement ({secondary}) because value {value} cm exceeded cutoff {cutoff} cm for size {baseSize}.",
+    "result.gloves.recommended": "Recommended glove size based on hand circumference {value} cm.",
+    "result.gloves.children.border": "Hand circumference {value} cm is on the border between children glove sizes. The larger size {size} is recommended.",
+    "result.gloves.belowAdult": "Hand circumference {value} cm is below the adult range. Nearest adult size: {size}.",
+    "result.gloves.outOfRange": "Hand circumference {value} cm is outside the standard range. Nearest size: {size}.",
+    "result.gloves.border": "Hand circumference {value} cm is on the border between two glove sizes. The larger size {size} is recommended.",
+    "result.shoe.recommended": "Recommended shoe cover / sock size for EU shoe size {value}.",
+    "result.shoe.outOfRange": "EU shoe size {value} is outside the standard range. Nearest size: {size}.",
+  },
+};
+
+function resolveLocale() {
+  const urlLang = new URLSearchParams(window.location.search).get("lang");
+  const htmlLang = document.documentElement.lang;
+  const browserLang = navigator.language;
+  const raw = (urlLang || htmlLang || browserLang || "cs").toLowerCase();
+
+  if (raw.startsWith("cs")) return "cs";
+  if (raw.startsWith("sk")) return "sk";
+  if (raw === "nl-be" || raw === "be" || raw.includes("flem")) return "nl-BE";
+  if (raw.startsWith("nl")) return "nl";
+  if (raw.startsWith("de")) return "de";
+  if (raw.startsWith("fr")) return "fr";
+  if (raw.startsWith("da")) return "da";
+  if (raw.startsWith("nb") || raw.startsWith("nn") || raw.startsWith("no")) return "nb";
+  if (raw.startsWith("es")) return "es";
+  if (raw === "en-us") return "en-US";
+  if (raw.startsWith("en-gb")) return "en-GB";
+  if (raw.startsWith("en")) return "en";
+  return "cs";
+}
+
+let LOCALE = resolveLocale();
+
+const LANGUAGE_OPTIONS = [
+  { value: "cs", label: "Czech Republic - Czech" },
+  { value: "en-GB", label: "United Kingdom - English" },
+  { value: "sk", label: "Slovakia - Slovak" },
+  { value: "nl", label: "Netherlands - Dutch" },
+  { value: "nl-BE", label: "Belgium - Dutch" },
+  { value: "de", label: "Germany - German" },
+  { value: "fr", label: "France - French" },
+  { value: "da", label: "Denmark - Danish" },
+  { value: "nb", label: "Norway - Norwegian" },
+  { value: "es", label: "Spain - Spanish" },
+  { value: "en-US", label: "North America - English" },
+  { value: "en", label: "Other Countries - English" },
+];
+
+function getLocaleBase(locale) {
+  if (locale === "en-GB" || locale === "en-US") return "en";
+  if (locale === "nl-BE") return "nl";
+  return locale;
+}
+
+async function loadLocalesFromFiles() {
+  const locales = ["cs", "en", "sk", "nl", "de", "fr", "da", "nb", "es"];
+  await Promise.all(locales.map(async (locale) => {
+    try {
+      const res = await fetch(`./locales/${locale}.json`, { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json();
+      I18N[locale] = { ...I18N[locale], ...json };
+    } catch {
+      // Keep embedded fallback dictionaries when file loading is unavailable.
+    }
+  }));
+}
+
+function interpolate(template, params = {}) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => String(params[key] ?? `{${key}}`));
+}
+
+function t(key, params = {}) {
+  const baseLocale = getLocaleBase(LOCALE);
+  const dict = I18N[baseLocale] || I18N.cs;
+  const fallback = I18N.en[key] || I18N.cs[key] || key;
+  const template = dict[key] || fallback;
+  return interpolate(template, params);
+}
+
 // ---- field definitions ---------------------------------------------------
 
 const FIELDS = {
-  chest:             { label: "Obvod hrudníku",  unit: "cm", required: true  },
-  hips:              { label: "Obvod boků",       unit: "cm", required: true  },
-  waist:             { label: "Obvod pasu",       unit: "cm", required: true  },
-  height:            { label: "Výška",            unit: "cm", required: false },
-  height_required:   { label: "Výška",            unit: "cm", required: true  },
-  handCircumference: { label: "Obvod ruky",       unit: "cm", required: true  },
-  shoeSize:          { label: "Velikost boty",    unit: "EU", required: true, step: 0.5 },
+  chest:             { labelKey: "field.chest",            unit: "cm", required: true  },
+  hips:              { labelKey: "field.hips",             unit: "cm", required: true  },
+  waist:             { labelKey: "field.waist",            unit: "cm", required: true  },
+  height:            { labelKey: "field.height",           unit: "cm", required: false },
+  height_required:   { labelKey: "field.height",           unit: "cm", required: true  },
+  handCircumference: { labelKey: "field.handCircumference", unit: "cm", required: true  },
+  shoeSize:          { labelKey: "field.shoeSize",         unit: "EU", required: true, step: 0.5 },
 };
 
 // Which input fields to show for each [gender][type] combination.
@@ -691,20 +926,51 @@ const measurementVisual = document.getElementById("measurement-visual");
 const mvSubtitle = document.getElementById("mv-subtitle");
 const mvMeasures = document.getElementById("mv-measures");
 const mvGloveImage = document.getElementById("mv-glove-image");
+const langSelect = document.getElementById("lang-select");
+
+function applyStaticTexts() {
+    langSelect.innerHTML = LANGUAGE_OPTIONS
+      .map(opt => `<option value="${opt.value}">${opt.label}</option>`)
+      .join("");
+    langSelect.value = LOCALE;
+
+  document.documentElement.lang = LOCALE;
+  document.title = t("meta.title");
+
+  document.querySelector(".card-header h1").textContent = t("header.title");
+  document.querySelector(".card-header p").textContent = t("header.subtitle");
+  document.querySelector("#type-chips").closest(".field").querySelector("label").textContent = t("section.type");
+  document.querySelector("#gender-field > label").textContent = t("section.gender");
+  document.querySelector("#measurements-field > label").textContent = t("section.measurements");
+  document.getElementById("submit-btn").textContent = t("button.submit");
+
+  document.querySelector('label[for="t-top"]').textContent = t("type.top");
+  document.querySelector('label[for="t-skinsuit"]').textContent = t("type.skinsuit");
+  document.querySelector('label[for="t-bottom"]').textContent = t("type.bottom");
+  document.querySelector('label[for="t-gloves"]').textContent = t("type.gloves");
+  document.querySelector('label[for="t-shoes"]').textContent = t("type.shoe_covers");
+  document.querySelector('label[for="t-sleeves"]').textContent = t("type.sleeves");
+
+  document.querySelector('label[for="g-men"]').textContent = t("gender.men");
+  document.querySelector('label[for="g-women"]').textContent = t("gender.women");
+  document.querySelector('label[for="g-children"]').textContent = t("gender.children");
+
+  sleeveInfo.innerHTML = t("sleeves.info");
+  document.querySelector("#result .result-label").textContent = t("result.label");
+  borderBadge.textContent = t("result.borderBadge");
+  document.querySelector(".mv-title").textContent = t("measurement.where");
+}
+
+function bindLanguageSelector() {
+  langSelect.addEventListener("change", () => {
+    const next = langSelect.value;
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", next);
+    window.location.href = url.toString();
+  });
+}
 
 // ---- helpers -------------------------------------------------------------
-
-// Midpoint of the full measurement range for each field × gender,
-// used as the input placeholder so the example value is meaningful.
-const PLACEHOLDER_VALS = {
-  chest:             { men: 106, women: 100, children: 67  },
-  hips:              { men: 107, women: 102               },
-  waist:             { men: 90,  women: 76, children: 61  },
-  height:            { men: 180, women: 170, children: 133 },
-  height_required:   { men: 180, women: 170, children: 133 },
-  handCircumference: { men: 18,  women: 18,  children: 18  },
-  shoeSize:          { men: 42,  women: 42,  children: 42  },
-};
 
 const SIZE_NAME_MAP = {
   "0": "XXS",
@@ -734,11 +1000,6 @@ function formatSizeWithNameHtml(size) {
     : `<span class="size-num">${size}</span>`;
 }
 
-
-function getPlaceholder(key, gender) {
-  const g = PLACEHOLDER_VALS[key];
-  return String(g?.[gender] ?? g?.men ?? 80);
-}
 
 function getVal(name) {
   const el = document.querySelector(`[name="${name}"]:checked`);
@@ -779,7 +1040,7 @@ function updateMeasurementVisual() {
   if (type === "gloves") {
     mvGloveImage.classList.remove("mv-hidden");
     mvSubtitle.textContent = "";
-    mvMeasures.innerHTML = '<span class="mv-chip">Obvod ruky</span>';
+    mvMeasures.innerHTML = `<span class="mv-chip">${t("measurement.handCircumference")}</span>`;
     return;
   }
 
@@ -800,7 +1061,10 @@ function updateMeasurementVisual() {
 
   mvMeasures.innerHTML = Array.from(valid)
     .map(key => {
-      const name = key === "height" ? "Výška" : key === "chest" ? "Hrudník" : key === "waist" ? "Pas" : "Boky";
+      const name = key === "height" ? t("chip.height")
+        : key === "chest" ? t("chip.chest")
+        : key === "waist" ? t("chip.waist")
+        : t("chip.hips");
       return `<span class="mv-chip">${name}</span>`;
     })
     .join("");
@@ -823,16 +1087,15 @@ function renderInputs() {
     const isRequired = def.required;
     grid.innerHTML += `
       <div class="input-field">
-        <label for="m-${inputKey}">${def.label}</label>
+        <label for="m-${inputKey}">${t(def.labelKey)}</label>
         <div class="input-wrap ${isRequired ? "required" : "optional"}">
-          <span class="input-badge">${isRequired ? "Povinné" : "Volitelné"}</span>
+          <span class="input-badge">${isRequired ? t("input.required") : t("input.optional")}</span>
           <input
             type="number"
             id="m-${inputKey}"
             name="${inputKey}"
             min="1"
             step="${def.step ?? 0.1}"
-            placeholder="${getPlaceholder(key, gender)}"
             ${def.required ? "required" : ""}
           />
           <span class="unit-suffix">${def.unit}</span>
@@ -877,71 +1140,36 @@ document.querySelectorAll('[name="type"], [name="gender"]').forEach(el => {
 
 // ---- note translation ----------------------------------------------------
 
-const MEAS_CS = {
-  chest:  "obvod hrudníku",
-  hips:   "obvod boků",
-  waist:  "obvod pasu",
-  height: "výška",
-};
-const GARMENT_CS = { top: "horního oblečení", bottom: "spodního oblečení" };
+function localizeMeasurementKey(measurement) {
+  return t(`measurementKey.${measurement}`);
+}
 
-function translateNote(note, selectedType) {
-  const extMatch = note.match(/ Extended size chosen because (height|hips) ([\d.]+) cm exceeded cutoff ([\d.]+) cm for size (\d+)\.$/);
-  const extCs = extMatch
-    ? ` Prodloužená velikost byla zvolena na základě sekundární míry (${MEAS_CS[extMatch[1]] || extMatch[1]}), protože hodnota ${extMatch[2]} cm překročila hranici ${extMatch[3]} cm pro velikost ${extMatch[4]}.`
-    : "";
-  const coreNote = (extMatch ? note.replace(/ Extended size chosen because .*$/, "") : note).trim();
+function localizeGarmentKey(garment, selectedType) {
+  if (selectedType === "skinsuit") return t("garment.skinsuit");
+  return garment === "top" ? t("garment.top") : t("garment.bottom");
+}
 
-  let m;
-
-  // "Recommended top/bottom size based on <meas>."
-  m = coreNote.match(/^Recommended (top|bottom) size based on (\w+)\.$/);
-  if (m) {
-    const g = selectedType === "skinsuit"
-      ? "kombinézy"
-      : (GARMENT_CS[m[1]] || m[1]);
-    const meas = MEAS_CS[m[2]] || m[2];
-    return `Doporučená velikost ${g} na základě: ${meas}.${extCs}`;
+function translateResultNote(result, selectedType) {
+  const params = { ...(result.noteParams || {}) };
+  if (params.measurement) {
+    params.measurement = localizeMeasurementKey(String(params.measurement));
+  }
+  if (params.secondary) {
+    params.secondary = localizeMeasurementKey(String(params.secondary));
+  }
+  if (params.garment) {
+    params.garment = localizeGarmentKey(String(params.garment), selectedType);
   }
 
-  // "Recommended glove size based on hand circumference X cm."
-  m = coreNote.match(/^Recommended glove size based on hand circumference ([\d.]+) cm\.$/);
-  if (m) return `Doporučená velikost rukavic na základě obvodu ruky ${m[1]} cm.`;
-
-  // "Recommended shoe cover / sock size for EU shoe size X."
-  m = coreNote.match(/^Recommended shoe cover \/ sock size for EU shoe size ([\d.]+)\.$/);
-  if (m) return `Doporučená velikost návleků / ponožek pro velikost boty EU ${m[1]}.`;
-
-  // "Your <meas> measurement is smaller than our smallest size. Size X is the closest available."
-  m = coreNote.match(/^Your (\w+) measurement is smaller than our smallest size\. Size (.+) is the closest available\.$/);
-  if (m) {
-    const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) je menší než nejmenší dostupná velikost. Nejbližší velikost: ${m[2]}.${extCs}`;
+  const base = result.noteKey ? t(result.noteKey, params) : result.note;
+  if (result.noteExtraKey) {
+    const extraParams = { ...(result.noteExtraParams || {}) };
+    if (extraParams.secondary) {
+      extraParams.secondary = localizeMeasurementKey(String(extraParams.secondary));
+    }
+    return `${base} ${t(result.noteExtraKey, extraParams)}`;
   }
-
-  // "Your <meas> measurement is larger than our largest size. Size X is the closest available."
-  m = coreNote.match(/^Your (\w+) measurement is larger than our largest size\. Size (.+) is the closest available\.$/);
-  if (m) {
-    const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) je větší než největší dostupná velikost. Nejbližší velikost: ${m[2]}.${extCs}`;
-  }
-
-  // "Your <meas> measurement falls exactly on the border between two sizes. The larger size X is recommended."
-  m = coreNote.match(/^Your (\w+) measurement falls exactly on the border between two sizes\. The larger size (.+) is recommended\.$/);
-  if (m) {
-    const meas = MEAS_CS[m[1]] || m[1];
-    return `Vaše míra (${meas}) leží přesně na hranici dvou velikostí. Doporučujeme větší velikost ${m[2]}.${extCs}`;
-  }
-
-  // "Hand circumference X cm is outside the standard range. Nearest size: Y."
-  m = coreNote.match(/^Hand circumference ([\d.]+) cm is outside the standard range\. Nearest size: (.+)\.$/);
-  if (m) return `Obvod ruky ${m[1]} cm je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
-
-  // "EU shoe size X is outside the standard range. Nearest size: Y."
-  m = coreNote.match(/^EU shoe size ([\d.]+) is outside the standard range\. Nearest size: (.+)\.$/);
-  if (m) return `Velikost boty EU ${m[1]} je mimo standardní rozsah. Nejbližší velikost: ${m[2]}.`;
-
-  return coreNote + extCs; // fallback: return as-is with optional extended suffix
+  return base;
 }
 
 // ---- proximity visualization ---------------------------------------------
@@ -987,23 +1215,23 @@ function getFinalVizConfig(input, chosenSize) {
   const { gender, type } = input;
   if (type === 'gloves') {
     const rows = gender === 'children' ? VIZ.gloves_children : VIZ.gloves_adult;
-    return { rows, chosenSize, label: 'Výsledná velikost', showName: false };
+    return { rows, chosenSize, label: t('viz.finalSize'), showName: false };
   }
   if (type === 'shoe_covers') {
-    return { rows: VIZ.shoe_covers, chosenSize, label: 'Výsledná velikost', showName: false };
+    return { rows: VIZ.shoe_covers, chosenSize, label: t('viz.finalSize'), showName: false };
   }
   if (gender === 'children') {
     const rows = type === 'top' ? VIZ.children.height : VIZ.children.waist;
-    return { rows, chosenSize, label: 'Výsledná velikost', showName: false };
+    return { rows, chosenSize, label: t('viz.finalSize'), showName: false };
   }
   if (gender === 'men') {
     const rows = (type === 'top' || type === 'skinsuit')
       ? (type === 'skinsuit' ? VIZ.men_combined.chest.filter(r => Number(String(r.s).replace('+', '')) <= 6) : VIZ.men_combined.chest)
       : VIZ.men_combined.hips;
-    return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
+    return { rows, chosenSize, label: t('viz.finalSize'), showName: true };
   }
   const rows = (type === 'top' || type === 'skinsuit') ? VIZ.women.chest : VIZ.women.hips;
-  return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
+  return { rows, chosenSize, label: t('viz.finalSize'), showName: true };
 }
 
 function getVizConfigs(input, chosenSize) {
@@ -1012,7 +1240,7 @@ function getVizConfigs(input, chosenSize) {
     const rows = gender === 'children' ? VIZ.gloves_children : VIZ.gloves_adult;
     return [{ rows, value: input.handCircumference, unit: 'cm', label: 'Obvod ruky' }];
   }
-  if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: 'Velikost boty' }];
+  if (type === 'shoe_covers') return [{ rows: VIZ.shoe_covers, value: input.shoeSize,          unit: 'EU', label: t('field.shoeSize') }];
   const pickSizeForViz = (rows, value) => {
     if (value === undefined || !rows?.length) return undefined;
     const matches = rows.filter(r => value >= r.a && value <= r.b);
@@ -1049,17 +1277,17 @@ function getVizConfigs(input, chosenSize) {
 
     if (type === 'top' || type === 'skinsuit') {
       const topRows = type === 'skinsuit' ? VIZ.men_std.chest.filter(r => Number(r.s) <= 6) : VIZ.men_std.chest;
-      const cfgs = [{ rows: topRows, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize: baseSize }];
+      const cfgs = [{ rows: topRows, value: input.chest, unit: 'cm', label: t('measurement.chest'), chosenSize: baseSize }];
       if (input.height !== undefined && finalIsPlus) {
         const optionalViz = pickOptionalViz(input.height);
-        cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: 'Výška', chosenSize: optionalViz.chosenSize });
+        cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: t('measurement.height'), chosenSize: optionalViz.chosenSize });
       }
       return cfgs;
     }
-    const cfgs = [{ rows: VIZ.men_std.hips, value: input.hips, unit: 'cm', label: 'Obvod boků', chosenSize: baseSize }];
+    const cfgs = [{ rows: VIZ.men_std.hips, value: input.hips, unit: 'cm', label: t('measurement.hips'), chosenSize: baseSize }];
     if (input.height !== undefined && finalIsPlus) {
       const optionalViz = pickOptionalViz(input.height);
-      cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: 'Výška', chosenSize: optionalViz.chosenSize });
+      cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: t('measurement.height'), chosenSize: optionalViz.chosenSize });
     }
     return cfgs;
   }
@@ -1073,17 +1301,17 @@ function getVizConfigs(input, chosenSize) {
     if (type === 'top') {
       // Show bars for both height and chest when both are provided
       const configs = [];
-      if (input.height) configs.push({ rows: tbl.height, value: input.height, unit: 'cm', label: 'Výška' });
-      if (input.chest)  configs.push({ rows: tbl.chest,  value: input.chest,  unit: 'cm', label: 'Obvod hrudníku' });
-      return configs.length ? configs : [{ rows: tbl.height, value: input.height ?? input.chest, unit: 'cm', label: 'Výška' }];
+      if (input.height) configs.push({ rows: tbl.height, value: input.height, unit: 'cm', label: t('measurement.height') });
+      if (input.chest)  configs.push({ rows: tbl.chest,  value: input.chest,  unit: 'cm', label: t('measurement.chest') });
+      return configs.length ? configs : [{ rows: tbl.height, value: input.height ?? input.chest, unit: 'cm', label: t('measurement.height') }];
     }
-    return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: 'Obvod pasu' }];
+    return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: t('measurement.waist') }];
   }
   if (type === 'top' || type === 'skinsuit') {
-    const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.chest : tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize }];
+    const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.chest : tbl.chest, value: input.chest, unit: 'cm', label: t('measurement.chest'), chosenSize }];
     return cfgs;
   }
-  const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.hips : tbl.hips, value: input.hips, unit: 'cm', label: 'Obvod boků', chosenSize }];
+  const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.hips : tbl.hips, value: input.hips, unit: 'cm', label: t('measurement.hips'), chosenSize }];
   return cfgs;
 }
 
@@ -1100,7 +1328,7 @@ function buildFinalVizHtml(rows, chosenSize, label, showName = true) {
       <div class="viz-bar-outer">
         <div class="viz-bar">${segs}</div>
       </div>
-      <div class="viz-range-note">Doporučeno: ${recommendedText}</div>
+      <div class="viz-range-note">${t('viz.recommended', { size: recommendedText })}</div>
     </div>`;
 }
 
@@ -1147,11 +1375,11 @@ function buildVizHtml(rows, value, chosenSize, unit, label) {
 
   const markerCls = outside ? 'viz-marker outside' : 'viz-marker';
   const chosen    = rows[chosenIdx] ?? rows[rows.length - 1];
-  const rangeNote = `Velikost ${chosen.s}: ${chosen.a}–${chosen.b} ${unit}`;
+  const rangeNote = t('viz.sizeRange', { size: chosen.s, min: chosen.a, max: chosen.b, unit });
 
   return `
     <div class="viz-wrap">
-      <div class="viz-title">Poloha vaší míry — ${label}</div>
+      <div class="viz-title">${t('viz.position', { label })}</div>
       <div class="viz-bar-outer">
         <div class="viz-bar">${segs}</div>
         <div class="${markerCls}" style="left:${markerPct}%" data-label="${value} ${unit}"></div>
@@ -1165,10 +1393,10 @@ function getSecondaryNoEffectMessage(input, chosenSize) {
   const hasSecondary = input.height !== undefined;
   const hasExtended = String(chosenSize).includes('+');
   if (gender === 'men' && (type === 'top' || type === 'skinsuit' || type === 'bottom') && hasSecondary && !hasExtended) {
-    return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
+    return t('result.secondaryNoEffect');
   }
   if (gender === 'women' && (type === 'top' || type === 'skinsuit' || type === 'bottom') && hasSecondary) {
-    return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
+    return t('result.secondaryNoEffect');
   }
   return '';
 }
@@ -1225,7 +1453,7 @@ form.addEventListener("submit", e => {
     resultSize.innerHTML    = type === 'gloves'
       ? `<span class="size-num">${result.size}</span>`
       : formatSizeWithNameHtml(result.size);
-    resultNote.textContent  = translateNote(result.note, type);
+    resultNote.textContent  = translateResultNote(result, type);
     if (result.onBorder) {
       borderBadge.classList.remove("hidden");
     } else {
@@ -1240,7 +1468,7 @@ form.addEventListener("submit", e => {
     if (anyOutside) {
       const oob = vizCfgs.find(c => c.value !== undefined
         && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
-      outWarn.textContent = `Zadaná hodnota (${oob.label.toLowerCase()}: ${oob.value} ${oob.unit}) je mimo rozsah naší tabulky — zobrazujeme nejbližší dostupnou velikost.`;
+      outWarn.textContent = t('warn.outOfRange', { label: String(oob.label).toLowerCase(), value: oob.value, unit: oob.unit });
       outWarn.classList.remove("hidden");
     } else {
       outWarn.classList.add("hidden");
@@ -1260,7 +1488,7 @@ form.addEventListener("submit", e => {
     resultBox.style.display = "block";
     resultBox.classList.add("error");
     resultSize.textContent  = err.message;
-    resultNote.textContent  = "Zkontrolujte prosím svá měření a zkuste to znovu.";
+    resultNote.textContent  = t('result.invalidInput');
     borderBadge.classList.add("hidden");
     outWarn.classList.add("hidden");
     finalVizContainer.innerHTML = "";
@@ -1271,14 +1499,21 @@ form.addEventListener("submit", e => {
 });
 
 // ---- init ----------------------------------------------------------------
-if (getVal("type") === "skinsuit") {
-  const gChildren = document.getElementById("g-children");
-  gChildren.disabled = true;
-  if (getVal("gender") === "children") {
-    document.getElementById("g-men").checked = true;
+async function initApp() {
+  await loadLocalesFromFiles();
+  applyStaticTexts();
+  bindLanguageSelector();
+  if (getVal("type") === "skinsuit") {
+    const gChildren = document.getElementById("g-children");
+    gChildren.disabled = true;
+    if (getVal("gender") === "children") {
+      document.getElementById("g-men").checked = true;
+    }
   }
+  renderInputs();
 }
-renderInputs();
+
+initApp();
 </script>
 </body>
 </html>

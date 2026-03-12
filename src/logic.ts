@@ -316,6 +316,8 @@ function getGloveSize(input: SizeInput): SizeResult {
       note: onBorder
         ? `Hand circumference ${v} cm falls on the border between children glove sizes. The larger size ${size} is recommended.`
         : `Recommended glove size based on hand circumference ${v} cm.`,
+      noteKey: onBorder ? "result.gloves.children.border" : "result.gloves.recommended",
+      noteParams: onBorder ? { value: v, size } : { value: v },
     };
   }
 
@@ -328,6 +330,8 @@ function getGloveSize(input: SizeInput): SizeResult {
       size: firstAdult.size,
       onBorder: false,
       note: `Hand circumference ${v} cm is below the adult range. Nearest adult size: ${firstAdult.size}.`,
+      noteKey: "result.gloves.belowAdult",
+      noteParams: { value: v, size: firstAdult.size },
     };
   }
 
@@ -341,6 +345,8 @@ function getGloveSize(input: SizeInput): SizeResult {
       size: fallback.size,
       onBorder: false,
       note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${fallback.size}.`,
+      noteKey: "result.gloves.outOfRange",
+      noteParams: { value: v, size: fallback.size },
     };
   }
 
@@ -355,6 +361,8 @@ function getGloveSize(input: SizeInput): SizeResult {
     note: onBorder
       ? `Hand circumference ${v} cm falls on the border between two glove sizes. The larger size ${matched.size} is recommended.`
       : `Recommended glove size based on hand circumference ${v} cm.`,
+    noteKey: onBorder ? "result.gloves.border" : "result.gloves.recommended",
+    noteParams: onBorder ? { value: v, size: matched.size } : { value: v },
   };
 }
 
@@ -373,12 +381,16 @@ function getShoeCoverSize(input: SizeInput): SizeResult {
       size: fallback.size,
       onBorder: false,
       note: `EU shoe size ${v} is outside the standard range. Nearest size: ${fallback.size}.`,
+      noteKey: "result.shoe.outOfRange",
+      noteParams: { value: v, size: fallback.size },
     };
   }
   return {
     size: matched.size,
     onBorder: false,
     note: `Recommended shoe cover / sock size for EU shoe size ${v}.`,
+    noteKey: "result.shoe.recommended",
+    noteParams: { value: v },
   };
 }
 
@@ -395,23 +407,43 @@ function buildResult(
   extendedReason?: { secondary: "height" | "hips"; value: number; cutoff: number; baseSize: string }
 ): SizeResult {
   let note: string;
+  let noteKey: string;
+  let noteParams: Record<string, string | number | boolean>;
 
   if (outOfRange === "below") {
     note = `Your ${primaryMeasurement} measurement is smaller than our smallest size. Size ${size} is the closest available.`;
+    noteKey = "result.outOfRange.below";
+    noteParams = { measurement: primaryMeasurement, size };
   } else if (outOfRange === "above") {
     note = `Your ${primaryMeasurement} measurement is larger than our largest size. Size ${size} is the closest available.`;
+    noteKey = "result.outOfRange.above";
+    noteParams = { measurement: primaryMeasurement, size };
   } else if (onBorder) {
     note = `Your ${primaryMeasurement} measurement falls exactly on the border between two sizes. The larger size ${size} is recommended.`;
+    noteKey = "result.border";
+    noteParams = { measurement: primaryMeasurement, size };
   } else {
     const garment = isTop ? "top" : "bottom";
     note = `Recommended ${garment} size based on ${primaryMeasurement}.`;
+    noteKey = "result.recommended";
+    noteParams = { garment, measurement: primaryMeasurement };
   }
+
+  let noteExtraKey: string | undefined;
+  let noteExtraParams: Record<string, string | number | boolean> | undefined;
 
   if (extendedReason) {
     note += ` Extended size chosen because ${extendedReason.secondary} ${extendedReason.value} cm exceeded cutoff ${extendedReason.cutoff} cm for size ${extendedReason.baseSize}.`;
+    noteExtraKey = "result.extendedReason";
+    noteExtraParams = {
+      secondary: extendedReason.secondary,
+      value: extendedReason.value,
+      cutoff: extendedReason.cutoff,
+      baseSize: extendedReason.baseSize,
+    };
   }
 
-  return { size, onBorder, note };
+  return { size, onBorder, note, noteKey, noteParams, noteExtraKey, noteExtraParams };
 }
 
 // ---------------------------------------------------------------------------

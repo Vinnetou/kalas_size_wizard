@@ -264,7 +264,9 @@ function getGloveSize(input) {
     return {
       size,
       onBorder: onBorder2,
-      note: onBorder2 ? `Hand circumference ${v} cm falls on the border between children glove sizes. The larger size ${size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`
+      note: onBorder2 ? `Hand circumference ${v} cm falls on the border between children glove sizes. The larger size ${size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`,
+      noteKey: onBorder2 ? "result.gloves.children.border" : "result.gloves.recommended",
+      noteParams: onBorder2 ? { value: v, size } : { value: v }
     };
   }
   const adultGloves = GLOVES.filter((g) => Number(g.size) >= 6);
@@ -273,7 +275,9 @@ function getGloveSize(input) {
     return {
       size: firstAdult.size,
       onBorder: false,
-      note: `Hand circumference ${v} cm is below the adult range. Nearest adult size: ${firstAdult.size}.`
+      note: `Hand circumference ${v} cm is below the adult range. Nearest adult size: ${firstAdult.size}.`,
+      noteKey: "result.gloves.belowAdult",
+      noteParams: { value: v, size: firstAdult.size }
     };
   }
   const matched = adultGloves.find(
@@ -284,14 +288,18 @@ function getGloveSize(input) {
     return {
       size: fallback.size,
       onBorder: false,
-      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${fallback.size}.`
+      note: `Hand circumference ${v} cm is outside the standard range. Nearest size: ${fallback.size}.`,
+      noteKey: "result.gloves.outOfRange",
+      noteParams: { value: v, size: fallback.size }
     };
   }
   const onBorder = adultGloves.slice(1).some((g) => v === g.handMin);
   return {
     size: matched.size,
     onBorder,
-    note: onBorder ? `Hand circumference ${v} cm falls on the border between two glove sizes. The larger size ${matched.size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`
+    note: onBorder ? `Hand circumference ${v} cm falls on the border between two glove sizes. The larger size ${matched.size} is recommended.` : `Recommended glove size based on hand circumference ${v} cm.`,
+    noteKey: onBorder ? "result.gloves.border" : "result.gloves.recommended",
+    noteParams: onBorder ? { value: v, size: matched.size } : { value: v }
   };
 }
 function getShoeCoverSize(input) {
@@ -305,31 +313,54 @@ function getShoeCoverSize(input) {
     return {
       size: fallback.size,
       onBorder: false,
-      note: `EU shoe size ${v} is outside the standard range. Nearest size: ${fallback.size}.`
+      note: `EU shoe size ${v} is outside the standard range. Nearest size: ${fallback.size}.`,
+      noteKey: "result.shoe.outOfRange",
+      noteParams: { value: v, size: fallback.size }
     };
   }
   return {
     size: matched.size,
     onBorder: false,
-    note: `Recommended shoe cover / sock size for EU shoe size ${v}.`
+    note: `Recommended shoe cover / sock size for EU shoe size ${v}.`,
+    noteKey: "result.shoe.recommended",
+    noteParams: { value: v }
   };
 }
 function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop, extendedReason) {
   let note;
+  let noteKey;
+  let noteParams;
   if (outOfRange === "below") {
     note = `Your ${primaryMeasurement} measurement is smaller than our smallest size. Size ${size} is the closest available.`;
+    noteKey = "result.outOfRange.below";
+    noteParams = { measurement: primaryMeasurement, size };
   } else if (outOfRange === "above") {
     note = `Your ${primaryMeasurement} measurement is larger than our largest size. Size ${size} is the closest available.`;
+    noteKey = "result.outOfRange.above";
+    noteParams = { measurement: primaryMeasurement, size };
   } else if (onBorder) {
     note = `Your ${primaryMeasurement} measurement falls exactly on the border between two sizes. The larger size ${size} is recommended.`;
+    noteKey = "result.border";
+    noteParams = { measurement: primaryMeasurement, size };
   } else {
     const garment = isTop ? "top" : "bottom";
     note = `Recommended ${garment} size based on ${primaryMeasurement}.`;
+    noteKey = "result.recommended";
+    noteParams = { garment, measurement: primaryMeasurement };
   }
+  let noteExtraKey;
+  let noteExtraParams;
   if (extendedReason) {
     note += ` Extended size chosen because ${extendedReason.secondary} ${extendedReason.value} cm exceeded cutoff ${extendedReason.cutoff} cm for size ${extendedReason.baseSize}.`;
+    noteExtraKey = "result.extendedReason";
+    noteExtraParams = {
+      secondary: extendedReason.secondary,
+      value: extendedReason.value,
+      cutoff: extendedReason.cutoff,
+      baseSize: extendedReason.baseSize
+    };
   }
-  return { size, onBorder, note };
+  return { size, onBorder, note, noteKey, noteParams, noteExtraKey, noteExtraParams };
 }
 function getSize(input) {
   const { gender, type } = input;

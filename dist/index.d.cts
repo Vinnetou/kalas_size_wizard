@@ -63,6 +63,14 @@ interface SizeResult {
     onBorder: boolean;
     /** Human-readable note explaining the recommendation */
     note: string;
+    /** Optional i18n key for the primary recommendation note */
+    noteKey?: string;
+    /** Optional i18n params for the primary recommendation note */
+    noteParams?: Record<string, string | number | boolean>;
+    /** Optional i18n key for extra note sentence (e.g. extended-size reason) */
+    noteExtraKey?: string;
+    /** Optional i18n params for extra note sentence */
+    noteExtraParams?: Record<string, string | number | boolean>;
 }
 
 /**

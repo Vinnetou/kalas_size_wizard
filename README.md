@@ -264,6 +264,24 @@ npm run build
 npm run serve
 ```
 
+---
+
+## i18n Migration Notes
+
+If you want, I can outline a concrete migration plan for your current files (demo.html + logic.ts) in small steps so you can implement it safely.
+
+### Status of the proposed next steps
+
+1. Extract dictionaries into locale files: Done
+2. Add a language selector in UI: Done
+3. Remove legacy note-translation fallback: Done
+
+### Current behavior
+
+- Czech and English are supported in the demo.
+- Locale can be forced via query parameter, for example `?lang=en`.
+- Demo currently keeps an embedded fallback dictionary to remain robust if locale files are unavailable.
+
 Then open:
 
 - `http://localhost:3000/demo.html`
