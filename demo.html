@@ -1334,8 +1334,8 @@ function buildFinalVizHtml(rows, chosenSize, label, showName = true) {
 
 function buildVizHtml(rows, value, chosenSize, unit, label) {
   if (!value || !rows) return '';
-  const totalMin  = rows[0].a;
-  const totalMax  = rows[rows.length - 1].b;
+  const totalMin  = Math.min(...rows.map(r => r.a));
+  const totalMax  = Math.max(...rows.map(r => r.b));
   const segCount = rows.length;
   const outside   = value < totalMin || value > totalMax;
   const clamped   = Math.max(totalMin, Math.min(totalMax, value));
@@ -1463,11 +1463,16 @@ form.addEventListener("submit", e => {
     // Out-of-range warning + proximity viz (using rounded values)
     const vizCfgs = getVizConfigs(calc, result.size);
     const finalCfg = getFinalVizConfig(calc, result.size);
-    const anyOutside = vizCfgs.some(c => c.value !== undefined
-      && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
+    const isOutsideCfg = c => {
+      if (c.value === undefined || !c.rows?.length) return false;
+      const min = Math.min(...c.rows.map(r => r.a));
+      const max = Math.max(...c.rows.map(r => r.b));
+      return c.value < min || c.value > max;
+    };
+
+    const anyOutside = vizCfgs.some(isOutsideCfg);
     if (anyOutside) {
-      const oob = vizCfgs.find(c => c.value !== undefined
-        && (c.value < c.rows[0].a || c.value > c.rows[c.rows.length - 1].b));
+      const oob = vizCfgs.find(isOutsideCfg);
       outWarn.textContent = t('warn.outOfRange', { label: String(oob.label).toLowerCase(), value: oob.value, unit: oob.unit });
       outWarn.classList.remove("hidden");
     } else {
