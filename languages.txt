@@ -1,0 +1,12 @@
+Czech Republic - Czech
+United Kingdom - English
+Slovakia - Slovak
+Netherlands - Dutch
+Belgium - Flemisch
+Germany - German
+France - French
+Denmark - Danish
+Norway - Norwegian
+Spain - Spanis
+North America - English
+Other Countries - English

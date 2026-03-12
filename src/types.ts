@@ -6,11 +6,12 @@ export type Gender = "men" | "women" | "children";
 /**
  * Clothing types available.
  * - top: jerseys, jackets, vests, arm sleeves (sized by chest for adults, height for children)
+ * - skinsuit: race suits / kombinezy (same logic as top; men capped to max size 6)
  * - bottom: shorts, bibs, leg/knee sleeves (sized by hips for adults, waist for children)
  * - gloves: cycling gloves (sized by hand circumference)
  * - shoe_covers: shoe covers and socks (sized by EU shoe size)
  */
-export type ClothingType = "top" | "bottom" | "gloves" | "shoe_covers";
+export type ClothingType = "top" | "skinsuit" | "bottom" | "gloves" | "shoe_covers";
 
 /**
  * Whether to use standard or extended (prodloužené) men's sizes.
@@ -23,7 +24,7 @@ export type MenFit = "standard" | "extended";
  * Input measurements for size calculation. All values in cm except shoeSize (EU).
  * Which fields are required depends on the clothing type:
  *
- * - top (men/women): chest required, height optional
+ * - top / skinsuit (men/women): chest required, height optional
  * - top (children): height required, chest optional (tiebreaker)
  * - bottom (men): hips required, height optional (auto-selects 1+ to 4+)
  * - bottom (women): hips required, height optional (tiebreaker)

@@ -109,6 +109,23 @@ describe("getSize – men auto-extended", () => {
   });
 });
 
+describe("getSize – skinsuits", () => {
+  it("men skinsuit uses top logic with extended size", () => {
+    const r = getSize({ gender: "men", type: "skinsuit", chest: 91, height: 175 });
+    expect(r.size).toBe("2+");
+  });
+
+  it("men skinsuit is capped to max size 6", () => {
+    const r = getSize({ gender: "men", type: "skinsuit", chest: 125, height: 195 });
+    expect(r.size).toBe("6");
+  });
+
+  it("women skinsuit uses same logic as women top", () => {
+    const r = getSize({ gender: "women", type: "skinsuit", chest: 90, height: 170 });
+    expect(r.size).toBe("3");
+  });
+});
+
 describe("getSize – women tops", () => {
   it("returns size 1 for chest 85", () => {
     const r = getSize({ gender: "women", type: "top", chest: 85 });

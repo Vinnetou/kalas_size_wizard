@@ -144,7 +144,7 @@ function toExtendedMenSize(standardRow, type, input) {
     }
     return { useExtended: secondary >= extendedMin, secondary, cutoff: extendedMin };
   };
-  if (type === "top") {
+  if (type === "top" || type === "skinsuit") {
     const decision2 = shouldUseExtendedFromSecondary(
       input.height,
       standardRow.height,
@@ -182,20 +182,21 @@ function toExtendedMenSize(standardRow, type, input) {
   return { size: standardSize };
 }
 function getMenSize(type, input) {
-  const isTop = type === "top";
-  if (isTop) {
+  const isTopLike = type === "top" || type === "skinsuit";
+  const menRows = type === "skinsuit" ? MEN_STANDARD.filter((r) => Number(r.size) <= 6) : MEN_STANDARD;
+  if (isTopLike) {
     if (input.chest === void 0) {
       throw new Error(
-        "chest measurement is required for men top sizing (jerseys, jackets, vests)"
+        "chest measurement is required for men top sizing (jerseys, jackets, vests, skinsuits)"
       );
     }
     const { row: row2, onBorder: onBorder2, outOfRange: outOfRange2 } = matchRow(
-      MEN_STANDARD,
+      menRows,
       "chest",
       input.chest
     );
     const extended2 = toExtendedMenSize(row2, type, input);
-    return buildResult(extended2.size, onBorder2, outOfRange2, "chest", isTop, extended2.extendedReason);
+    return buildResult(extended2.size, onBorder2, outOfRange2, "chest", true, extended2.extendedReason);
   }
   if (input.hips === void 0) {
     throw new Error(
@@ -203,19 +204,19 @@ function getMenSize(type, input) {
     );
   }
   const { row, onBorder, outOfRange } = matchRow(
-    MEN_STANDARD,
+    menRows,
     "hips",
     input.hips
   );
   const extended = toExtendedMenSize(row, type, input);
-  return buildResult(extended.size, onBorder, outOfRange, "hips", isTop, extended.extendedReason);
+  return buildResult(extended.size, onBorder, outOfRange, "hips", false, extended.extendedReason);
 }
 function getWomenSize(type, input) {
-  const isTop = type === "top";
-  if (isTop) {
+  const isTopLike = type === "top" || type === "skinsuit";
+  if (isTopLike) {
     if (input.chest === void 0) {
       throw new Error(
-        "chest measurement is required for adult top sizing (jerseys, jackets, vests)"
+        "chest measurement is required for adult top sizing (jerseys, jackets, vests, skinsuits)"
       );
     }
     const { row: row2, onBorder: onBorder2, outOfRange: outOfRange2 } = matchRow(
@@ -225,7 +226,7 @@ function getWomenSize(type, input) {
       "height",
       input.height
     );
-    return buildResult(row2.size, onBorder2, outOfRange2, "chest", isTop);
+    return buildResult(row2.size, onBorder2, outOfRange2, "chest", true);
   }
   if (input.hips === void 0) {
     throw new Error(
@@ -239,7 +240,7 @@ function getWomenSize(type, input) {
     "height",
     input.height
   );
-  return buildResult(row.size, onBorder, outOfRange, "hips", isTop);
+  return buildResult(row.size, onBorder, outOfRange, "hips", false);
 }
 function getChildrenSize(type, input) {
   const isTop = type === "top";
@@ -358,6 +359,9 @@ function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop, exte
 }
 function getSize(input) {
   const { gender, type } = input;
+  if (type === "skinsuit" && gender === "children") {
+    throw new Error("skinsuit sizing is available only for men and women");
+  }
   if (type === "gloves") {
     return getGloveSize(input);
   }

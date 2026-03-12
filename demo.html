@@ -543,6 +543,9 @@
           <input type="radio" name="type" id="t-top"         value="top"         checked />
           <label for="t-top">Dres / Bunda / Vesta</label>
 
+          <input type="radio" name="type" id="t-skinsuit"    value="skinsuit"    />
+          <label for="t-skinsuit">Kombinéza</label>
+
           <input type="radio" name="type" id="t-bottom"      value="bottom"      />
           <label for="t-bottom">Kraťasy / Lacláče</label>
 
@@ -613,9 +616,17 @@
           <img class="mv-image" src="./pictures/men_boky.jpg" alt="Muži - měření boků" />
         </div>
 
+        <div id="mv-men-skinsuit" class="mv-group single">
+          <img class="mv-image" src="./pictures/men_kombi_hrudnik.jpg" alt="Muži - měření kombinezy" />
+        </div>
+
         <div id="mv-women" class="mv-group pair">
           <img class="mv-image" src="./pictures/women_hrudnik.jpg" alt="Ženy - měření hrudníku" />
           <img class="mv-image" src="./pictures/women_boky.jpg" alt="Ženy - měření boků" />
+        </div>
+
+        <div id="mv-women-skinsuit" class="mv-group single">
+          <img class="mv-image" src="./pictures/women_kombi_hrudnik.jpg" alt="Ženy - měření kombinezy" />
         </div>
 
         <div id="mv-children" class="mv-group single">
@@ -649,10 +660,12 @@ const FIELDS = {
 const SCHEMA = {
   men: {
     top:    ["chest", "height"],
+    skinsuit: ["chest", "height"],
     bottom: ["hips", "height"],
   },
   women: {
     top:    ["chest", "height"],
+    skinsuit: ["chest", "height"],
     bottom: ["hips",  "height"],
   },
   children: {
@@ -755,16 +768,15 @@ function updateMeasurementVisual() {
 
   const figures = {
     men: document.getElementById("mv-men"),
+    menSkinsuit: document.getElementById("mv-men-skinsuit"),
     women: document.getElementById("mv-women"),
+    womenSkinsuit: document.getElementById("mv-women-skinsuit"),
     children: document.getElementById("mv-children"),
   };
 
-  Object.entries(figures).forEach(([key, el]) => {
-    el.classList.toggle("active", key === gender);
-  });
+  Object.values(figures).forEach(el => el.classList.remove("active"));
 
   if (type === "gloves") {
-    Object.values(figures).forEach(el => el.classList.remove("active"));
     mvGloveImage.classList.remove("mv-hidden");
     mvSubtitle.textContent = "";
     mvMeasures.innerHTML = '<span class="mv-chip">Obvod ruky</span>';
@@ -773,9 +785,18 @@ function updateMeasurementVisual() {
 
   mvGloveImage.classList.add("mv-hidden");
 
+  if (type === "skinsuit") {
+    if (gender === "men") figures.menSkinsuit.classList.add("active");
+    if (gender === "women") figures.womenSkinsuit.classList.add("active");
+  } else {
+    if (gender === "men") figures.men.classList.add("active");
+    if (gender === "women") figures.women.classList.add("active");
+    if (gender === "children") figures.children.classList.add("active");
+  }
+
   mvSubtitle.textContent = "";
 
-  const valid = new Set(["chest", "hips"]);
+  const valid = type === "skinsuit" ? new Set(["chest"]) : new Set(["chest", "hips"]);
 
   mvMeasures.innerHTML = Array.from(valid)
     .map(key => {
@@ -838,6 +859,18 @@ function renderInputs() {
 
 document.querySelectorAll('[name="type"], [name="gender"]').forEach(el => {
   el.addEventListener("change", () => {
+    const type = getVal("type");
+    const gender = getVal("gender");
+    const gChildren = document.getElementById("g-children");
+
+    if (type === "skinsuit") {
+      gChildren.disabled = true;
+      if (gender === "children") {
+        document.getElementById("g-men").checked = true;
+      }
+    } else {
+      gChildren.disabled = false;
+    }
     renderInputs();
   });
 });
@@ -852,7 +885,7 @@ const MEAS_CS = {
 };
 const GARMENT_CS = { top: "horního oblečení", bottom: "spodního oblečení" };
 
-function translateNote(note) {
+function translateNote(note, selectedType) {
   const extMatch = note.match(/ Extended size chosen because (height|hips) ([\d.]+) cm exceeded cutoff ([\d.]+) cm for size (\d+)\.$/);
   const extCs = extMatch
     ? ` Prodloužená velikost byla zvolena na základě sekundární míry (${MEAS_CS[extMatch[1]] || extMatch[1]}), protože hodnota ${extMatch[2]} cm překročila hranici ${extMatch[3]} cm pro velikost ${extMatch[4]}.`
@@ -864,7 +897,9 @@ function translateNote(note) {
   // "Recommended top/bottom size based on <meas>."
   m = coreNote.match(/^Recommended (top|bottom) size based on (\w+)\.$/);
   if (m) {
-    const g = GARMENT_CS[m[1]] || m[1];
+    const g = selectedType === "skinsuit"
+      ? "kombinézy"
+      : (GARMENT_CS[m[1]] || m[1]);
     const meas = MEAS_CS[m[2]] || m[2];
     return `Doporučená velikost ${g} na základě: ${meas}.${extCs}`;
   }
@@ -962,10 +997,12 @@ function getFinalVizConfig(input, chosenSize) {
     return { rows, chosenSize, label: 'Výsledná velikost', showName: false };
   }
   if (gender === 'men') {
-    const rows = type === 'top' ? VIZ.men_combined.chest : VIZ.men_combined.hips;
+    const rows = (type === 'top' || type === 'skinsuit')
+      ? (type === 'skinsuit' ? VIZ.men_combined.chest.filter(r => Number(String(r.s).replace('+', '')) <= 6) : VIZ.men_combined.chest)
+      : VIZ.men_combined.hips;
     return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
   }
-  const rows = type === 'top' ? VIZ.women.chest : VIZ.women.hips;
+  const rows = (type === 'top' || type === 'skinsuit') ? VIZ.women.chest : VIZ.women.hips;
   return { rows, chosenSize, label: 'Výsledná velikost', showName: true };
 }
 
@@ -1010,8 +1047,9 @@ function getVizConfigs(input, chosenSize) {
       return { rows: decisionRows, chosenSize };
     };
 
-    if (type === 'top') {
-      const cfgs = [{ rows: VIZ.men_std.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize: baseSize }];
+    if (type === 'top' || type === 'skinsuit') {
+      const topRows = type === 'skinsuit' ? VIZ.men_std.chest.filter(r => Number(r.s) <= 6) : VIZ.men_std.chest;
+      const cfgs = [{ rows: topRows, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize: baseSize }];
       if (input.height !== undefined && finalIsPlus) {
         const optionalViz = pickOptionalViz(input.height);
         cfgs.push({ rows: optionalViz.rows, value: input.height, unit: 'cm', label: 'Výška', chosenSize: optionalViz.chosenSize });
@@ -1041,7 +1079,7 @@ function getVizConfigs(input, chosenSize) {
     }
     return [{ rows: tbl.waist, value: input.waist, unit: 'cm', label: 'Obvod pasu' }];
   }
-  if (type === 'top') {
+  if (type === 'top' || type === 'skinsuit') {
     const cfgs = [{ rows: gender === 'men' ? VIZ.men_combined.chest : tbl.chest, value: input.chest, unit: 'cm', label: 'Obvod hrudníku', chosenSize }];
     return cfgs;
   }
@@ -1126,10 +1164,10 @@ function getSecondaryNoEffectMessage(input, chosenSize) {
   const { gender, type } = input;
   const hasSecondary = input.height !== undefined;
   const hasExtended = String(chosenSize).includes('+');
-  if (gender === 'men' && (type === 'top' || type === 'bottom') && hasSecondary && !hasExtended) {
+  if (gender === 'men' && (type === 'top' || type === 'skinsuit' || type === 'bottom') && hasSecondary && !hasExtended) {
     return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
   }
-  if (gender === 'women' && (type === 'top' || type === 'bottom') && hasSecondary) {
+  if (gender === 'women' && (type === 'top' || type === 'skinsuit' || type === 'bottom') && hasSecondary) {
     return 'Sekundární míra (výška) neměla vliv na finální doporučení velikosti.';
   }
   return '';
@@ -1163,7 +1201,7 @@ form.addEventListener("submit", e => {
   const calc = { ...input };
   ["chest", "waist", "height", "hips"].forEach(k => {
     if (calc[k] === undefined) return;
-    const isMenSecondaryTop = gender === "men" && type === "top" && k === "height";
+    const isMenSecondaryTop = gender === "men" && (type === "top" || type === "skinsuit") && k === "height";
     const isMenSecondaryBottom = gender === "men" && type === "bottom" && k === "height";
     if (isMenSecondaryTop || isMenSecondaryBottom) {
       calc[k] = Math.round(calc[k] * 10) / 10;
@@ -1187,7 +1225,7 @@ form.addEventListener("submit", e => {
     resultSize.innerHTML    = type === 'gloves'
       ? `<span class="size-num">${result.size}</span>`
       : formatSizeWithNameHtml(result.size);
-    resultNote.textContent  = translateNote(result.note);
+    resultNote.textContent  = translateNote(result.note, type);
     if (result.onBorder) {
       borderBadge.classList.remove("hidden");
     } else {
@@ -1233,6 +1271,13 @@ form.addEventListener("submit", e => {
 });
 
 // ---- init ----------------------------------------------------------------
+if (getVal("type") === "skinsuit") {
+  const gChildren = document.getElementById("g-children");
+  gChildren.disabled = true;
+  if (getVal("gender") === "children") {
+    document.getElementById("g-men").checked = true;
+  }
+}
 renderInputs();
 </script>
 </body>
