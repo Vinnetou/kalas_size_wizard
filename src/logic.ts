@@ -1,4 +1,4 @@
-import type { SizeInput, SizeResult, ClothingType } from "./types.js";
+import type { SizeInput, SizeResult, ClothingType, SkinsuitInput, SkinsuitSizeResult } from "./types.js";
 import {
   MEN_STANDARD,
   MEN_EXTENDED,
@@ -447,6 +447,25 @@ function buildResult(
 }
 
 // ---------------------------------------------------------------------------
+// Skinsuit helpers
+// ---------------------------------------------------------------------------
+
+function getSizeNumeric(size: string): number {
+  return parseInt(size.replace("+", ""), 10);
+}
+
+/**
+ * Men's skinsuit lower-part sizing: same logic as men's shorts but capped at size 6.
+ */
+function getSkinsuitBottomSize(hips: number, height?: number): SizeResult {
+  const skinsuitRows = MEN_STANDARD.filter((r) => Number(r.size) <= 6);
+  const { row, onBorder, outOfRange } = matchRow(skinsuitRows, "hips", hips);
+  const mockInput: SizeInput = { gender: "men", type: "bottom", hips, height };
+  const extended = toExtendedMenSize(row, "bottom", mockInput);
+  return buildResult(extended.size, onBorder, outOfRange, "hips", false, extended.extendedReason);
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -502,4 +521,42 @@ export function getSize(input: SizeInput): SizeResult {
   }
 
   return getWomenSize(type, input);
+}
+
+/**
+ * Returns recommended sizes for both the upper (chest-based) and lower (hips-based)
+ * parts of a Kalas skinsuit. Both genders use the men's size tables, capped at size 6.
+ * Extended (+) sizes are applied the same way as for men's standard clothing.
+ *
+ * When the numeric size difference between the upper and lower part exceeds 1,
+ * the result is `{ result: "contact_hotdesk" }` — the measurements fall outside
+ * any regular cut and the customer should arrange personal fitting with Kalas.
+ *
+ * @example
+ * ```ts
+ * getSkinsuitSize({ chest: 96, heightTop: 177, hips: 97, heightBottom: 177 });
+ * // → { result: 'sizes', top: { size: '4', ... }, bottom: { size: '4', ... } }
+ *
+ * getSkinsuitSize({ chest: 88, hips: 81 });
+ * // → { result: 'contact_hotdesk' }  // top=2, bottom=0, diff=2 > 1
+ * ```
+ */
+export function getSkinsuitSize(input: SkinsuitInput): SkinsuitSizeResult {
+  const topResult = getSize({
+    gender: "men",
+    type: "skinsuit",
+    chest: input.chest,
+    height: input.heightTop,
+  });
+
+  const bottomResult = getSkinsuitBottomSize(input.hips, input.heightBottom);
+
+  const topNum = getSizeNumeric(topResult.size);
+  const bottomNum = getSizeNumeric(bottomResult.size);
+
+  if (Math.abs(topNum - bottomNum) > 1) {
+    return { result: "contact_hotdesk" };
+  }
+
+  return { result: "sizes", top: topResult, bottom: bottomResult };
 }

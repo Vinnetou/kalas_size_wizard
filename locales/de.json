@@ -62,5 +62,12 @@
   "result.gloves.border": "Handumfang {value} cm liegt auf der Grenze zwischen zwei Handschuhgroessen. Die groessere Groesse {size} wird empfohlen.",
   "result.shoe.recommended": "Empfohlene Uberschuh-/Sockengroesse fuer EU-Schuhgroesse {value}.",
   "result.shoe.outOfRange": "EU-Schuhgroesse {value} liegt ausserhalb des Standardbereichs. Naechste Groesse: {size}.",
-  "language.label": "Sprache"
+  "language.label": "Sprache",
+  "skinsuit.section.upper": "Oberteil (Brustumfang)",
+  "skinsuit.section.bottom": "Unterteil (Shorts)",
+  "skinsuit.result.label": "Empfohlene Einteiler-Größen",
+  "skinsuit.result.topLabel": "Oberteil",
+  "skinsuit.result.bottomLabel": "Unterteil",
+  "skinsuit.result.contactHotdeskTitle": "Persönliche Beratung erforderlich",
+  "skinsuit.result.contactHotdesk": "Die Größe liegt außerhalb unserer Standardempfehlung. Bitte kontaktieren Sie uns mit Ihren Maßen unter info@kalas.cz"
 }

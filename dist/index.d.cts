@@ -51,6 +51,34 @@ interface SizeInput {
     menFit?: MenFit;
 }
 /**
+ * Input for skinsuit (kombinéza) sizing.
+ * Both genders use men's size tables, capped at size 6.
+ * Upper part is sized by chest; lower part by hips.
+ * Height for each part drives the extended (+) size selection.
+ */
+interface SkinsuitInput {
+    /** Chest circumference in cm (upper part) */
+    chest: number;
+    /** Height in cm — for upper part extended size decision */
+    heightTop?: number;
+    /** Hip circumference in cm (lower part) */
+    hips: number;
+    /** Height in cm — for lower part extended size decision */
+    heightBottom?: number;
+}
+/**
+ * Result returned by getSkinsuitSize().
+ * When |topSizeNum − bottomSizeNum| > 1 the measurements fall outside any
+ * regular cut combination and the user must contact the Kalas hotdesk.
+ */
+type SkinsuitSizeResult = {
+    result: "sizes";
+    top: SizeResult;
+    bottom: SizeResult;
+} | {
+    result: "contact_hotdesk";
+};
+/**
  * Result returned by getSize().
  */
 interface SizeResult {
@@ -102,5 +130,24 @@ interface SizeResult {
  * ```
  */
 declare function getSize(input: SizeInput): SizeResult;
+/**
+ * Returns recommended sizes for both the upper (chest-based) and lower (hips-based)
+ * parts of a Kalas skinsuit. Both genders use the men's size tables, capped at size 6.
+ * Extended (+) sizes are applied the same way as for men's standard clothing.
+ *
+ * When the numeric size difference between the upper and lower part exceeds 1,
+ * the result is `{ result: "contact_hotdesk" }` — the measurements fall outside
+ * any regular cut and the customer should arrange personal fitting with Kalas.
+ *
+ * @example
+ * ```ts
+ * getSkinsuitSize({ chest: 96, heightTop: 177, hips: 97, heightBottom: 177 });
+ * // → { result: 'sizes', top: { size: '4', ... }, bottom: { size: '4', ... } }
+ *
+ * getSkinsuitSize({ chest: 88, hips: 81 });
+ * // → { result: 'contact_hotdesk' }  // top=2, bottom=0, diff=2 > 1
+ * ```
+ */
+declare function getSkinsuitSize(input: SkinsuitInput): SkinsuitSizeResult;
 
-export { type ClothingType, type Gender, type MenFit, type SizeInput, type SizeResult, getSize };
+export { type ClothingType, type Gender, type MenFit, type SizeInput, type SizeResult, type SkinsuitInput, type SkinsuitSizeResult, getSize, getSkinsuitSize };

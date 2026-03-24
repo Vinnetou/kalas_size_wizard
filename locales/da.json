@@ -62,5 +62,12 @@
   "result.gloves.border": "Haandomfang {value} cm ligger paa graensen mellem to handskestoerrelser. Den stoerre stoerrelse {size} anbefales.",
   "result.shoe.recommended": "Anbefalet skoovertraek-/sokkestoerrelse for EU-skostoerrelse {value}.",
   "result.shoe.outOfRange": "EU-skostoerrelse {value} er uden for standardomraadet. Naermeste stoerrelse: {size}.",
-  "language.label": "Sprog"
+  "language.label": "Sprog",
+  "skinsuit.section.upper": "Overdel (brystmål)",
+  "skinsuit.section.bottom": "Underdel (shorts)",
+  "skinsuit.result.label": "Anbefalede trøjedragt-størrelser",
+  "skinsuit.result.topLabel": "Overdel",
+  "skinsuit.result.bottomLabel": "Underdel",
+  "skinsuit.result.contactHotdeskTitle": "Personlig tilpasning påkrævet",
+  "skinsuit.result.contactHotdesk": "Størrelsen falder uden for vores standardanbefaling. Kontakt os venligst med dine mål på info@kalas.cz"
 }

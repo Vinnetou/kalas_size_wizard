@@ -62,5 +62,12 @@
   "result.gloves.border": "Handomkrets {value} cm ligger pa grensen mellom to hanskestorrelser. Den storre storrelsen {size} anbefales.",
   "result.shoe.recommended": "Anbefalt skotrekk-/sokkestorrelse for EU-skostorrelse {value}.",
   "result.shoe.outOfRange": "EU-skostorrelse {value} er utenfor standardomradet. Naermeste storrelse: {size}.",
-  "language.label": "Spraak"
+  "language.label": "Spraak",
+  "skinsuit.section.upper": "Overdel (brystmål)",
+  "skinsuit.section.bottom": "Underdel (shorts)",
+  "skinsuit.result.label": "Anbefalte heldrakt-størrelser",
+  "skinsuit.result.topLabel": "Overdel",
+  "skinsuit.result.bottomLabel": "Underdel",
+  "skinsuit.result.contactHotdeskTitle": "Personlig tilpasning kreves",
+  "skinsuit.result.contactHotdesk": "Størrelsen faller utenfor vår standardanbefaling. Kontakt oss gjerne med dine mål på info@kalas.cz"
 }

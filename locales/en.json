@@ -62,5 +62,12 @@
   "result.gloves.border": "Hand circumference {value} cm is on the border between two glove sizes. The larger size {size} is recommended.",
   "result.shoe.recommended": "Recommended shoe cover / sock size for EU shoe size {value}.",
   "result.shoe.outOfRange": "EU shoe size {value} is outside the standard range. Nearest size: {size}.",
-  "language.label": "Language"
+  "language.label": "Language",
+  "skinsuit.section.upper": "Upper part (chest)",
+  "skinsuit.section.bottom": "Lower part (shorts)",
+  "skinsuit.result.label": "Recommended skinsuit sizes",
+  "skinsuit.result.topLabel": "Upper part",
+  "skinsuit.result.bottomLabel": "Lower part",
+  "skinsuit.result.contactHotdeskTitle": "Personal fitting required",
+  "skinsuit.result.contactHotdesk": "The size falls outside our standard recommendation. For clarification, please contact us with your measurements at info@kalas.cz"
 }

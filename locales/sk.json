@@ -62,5 +62,12 @@
   "result.gloves.border": "Obvod ruky {value} cm je na hranici medzi dvoma velkostami rukavic. Odporucame vacsiu velkost {size}.",
   "result.shoe.recommended": "Odporucena velkost navlekov / ponoziek pre EU velkost tretier {value}.",
   "result.shoe.outOfRange": "EU velkost tretier {value} je mimo standardneho rozsahu. Najblizsia velkost: {size}.",
-  "language.label": "Jazyk"
+  "language.label": "Jazyk",
+  "skinsuit.section.upper": "Horná časť (hrudník)",
+  "skinsuit.section.bottom": "Dolná časť (kraťasy)",
+  "skinsuit.result.label": "Odporúčané veľkosti kombinézy",
+  "skinsuit.result.topLabel": "Horná časť",
+  "skinsuit.result.bottomLabel": "Dolná časť",
+  "skinsuit.result.contactHotdeskTitle": "Vyžaduje osobné meranie",
+  "skinsuit.result.contactHotdesk": "Velkost vychádza mimo štandardného odporúčania. Pre upresnenie nás prosím kontaktujte so svojimi rozmermi na info@kalas.cz"
 }

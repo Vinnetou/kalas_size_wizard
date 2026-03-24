@@ -62,5 +62,12 @@
   "result.gloves.border": "Le tour de main {value} cm est a la limite entre deux tailles de gants. La taille superieure {size} est recommandee.",
   "result.shoe.recommended": "Taille de couvre-chaussures / chaussettes recommandee pour la pointure EU {value}.",
   "result.shoe.outOfRange": "La pointure EU {value} est hors plage standard. Taille la plus proche: {size}.",
-  "language.label": "Langue"
+  "language.label": "Langue",
+  "skinsuit.section.upper": "Partie supérieure (poitrine)",
+  "skinsuit.section.bottom": "Partie inférieure (cuissard)",
+  "skinsuit.result.label": "Tailles combinaison recommandées",
+  "skinsuit.result.topLabel": "Partie supérieure",
+  "skinsuit.result.bottomLabel": "Partie inférieure",
+  "skinsuit.result.contactHotdeskTitle": "Mesures personnelles requises",
+  "skinsuit.result.contactHotdesk": "La taille est hors de notre recommandation standard. Pour plus de précisions, veuillez nous contacter avec vos mensurations à info@kalas.cz"
 }

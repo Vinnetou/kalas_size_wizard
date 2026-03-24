@@ -482,6 +482,73 @@
       border: 1px solid #e4e4e7;
     }
 
+    /* ---- skinsuit dual-field layout ---- */
+    .skinsuit-section-header {
+      grid-column: 1 / -1;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #d40000;
+      padding-top: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #fde8e8;
+      margin-bottom: 4px;
+    }
+    .skinsuit-section-header:first-child { padding-top: 0; }
+
+    /* ---- skinsuit dual-size result ---- */
+    .skinsuit-sizes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 1rem;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+    .skinsuit-part {
+      background: #fff9f9;
+      border: 1px solid #fde8e8;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .skinsuit-part-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #d40000;
+      margin-bottom: 2px;
+    }
+    .skinsuit-part-size {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #18181b;
+      line-height: 1.1;
+      margin: 2px 0 0;
+    }
+
+    /* ---- skinsuit contact hotdesk ---- */
+    .skinsuit-contact-hotdesk {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    .skinsuit-contact-hotdesk-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 8px;
+    }
+    .skinsuit-contact-hotdesk-text {
+      font-size: 0.83rem;
+      color: #78350f;
+      line-height: 1.55;
+    }
+
     /* ---- hidden ---- */
     .hidden { display: none !important; }
 
@@ -642,17 +709,19 @@
           <img class="mv-image" src="./pictures/men_boky.jpg" alt="Muži - měření boků" />
         </div>
 
-        <div id="mv-men-skinsuit" class="mv-group single">
+        <div id="mv-men-skinsuit" class="mv-group pair">
           <img class="mv-image" src="./pictures/men_kombi_hrudnik.jpg" alt="Muži - měření kombinezy" />
+          <img class="mv-image" src="./pictures/men_boky.jpg" alt="Muži - měření boků" />
+        </div>
+
+        <div id="mv-women-skinsuit" class="mv-group pair">
+          <img class="mv-image" src="./pictures/women_kombi_hrudnik.jpg" alt="Ženy - měření kombinezy" />
+          <img class="mv-image" src="./pictures/women_boky.jpg" alt="Ženy - měření boků" />
         </div>
 
         <div id="mv-women" class="mv-group pair">
           <img class="mv-image" src="./pictures/women_hrudnik.jpg" alt="Ženy - měření hrudníku" />
           <img class="mv-image" src="./pictures/women_boky.jpg" alt="Ženy - měření boků" />
-        </div>
-
-        <div id="mv-women-skinsuit" class="mv-group single">
-          <img class="mv-image" src="./pictures/women_kombi_hrudnik.jpg" alt="Ženy - měření kombinezy" />
         </div>
 
         <div id="mv-children" class="mv-group single">
@@ -667,7 +736,7 @@
 </div>
 
 <script type="module">
-import { getSize } from "./dist/index.js";
+import { getSize, getSkinsuitSize } from "./dist/index.js";
 
 const I18N = {
   cs: {
@@ -737,6 +806,13 @@ const I18N = {
     "result.gloves.border": "Obvod ruky {value} cm leží na hranici dvou velikostí rukavic. Doporučujeme větší velikost {size}.",
     "result.shoe.recommended": "Doporučená velikost návleků / ponožek pro velikost boty EU {value}.",
     "result.shoe.outOfRange": "Velikost boty EU {value} je mimo standardní rozsah. Nejbližší velikost: {size}.",
+    "skinsuit.section.upper": "Horní část (hrudník)",
+    "skinsuit.section.bottom": "Spodní část (kraťasy)",
+    "skinsuit.result.label": "Doporučené velikosti kombinézy",
+    "skinsuit.result.topLabel": "Horní část",
+    "skinsuit.result.bottomLabel": "Spodní část",
+    "skinsuit.result.contactHotdeskTitle": "Vyžaduje osobní měření",
+    "skinsuit.result.contactHotdesk": "Velikost vychází mimo standardní doporučení, pro upřesnění nás prosím kontaktujte se svými rozměry na info@kalas.cz",
   },
   en: {
     "language.label": "Language",
@@ -805,6 +881,13 @@ const I18N = {
     "result.gloves.border": "Hand circumference {value} cm is on the border between two glove sizes. The larger size {size} is recommended.",
     "result.shoe.recommended": "Recommended shoe cover / sock size for EU shoe size {value}.",
     "result.shoe.outOfRange": "EU shoe size {value} is outside the standard range. Nearest size: {size}.",
+    "skinsuit.section.upper": "Upper part (chest)",
+    "skinsuit.section.bottom": "Lower part (shorts)",
+    "skinsuit.result.label": "Recommended skinsuit sizes",
+    "skinsuit.result.topLabel": "Upper part",
+    "skinsuit.result.bottomLabel": "Lower part",
+    "skinsuit.result.contactHotdeskTitle": "Personal fitting required",
+    "skinsuit.result.contactHotdesk": "The size falls outside our standard recommendation. For clarification, please contact us with your measurements at info@kalas.cz",
   },
 };
 
@@ -920,6 +1003,8 @@ const resultSize  = document.getElementById("result-size");
 const borderBadge = document.getElementById("border-badge");
 const resultNote  = document.getElementById("result-note");
 const finalVizContainer = document.getElementById('final-viz-container');
+const vizContainer = document.getElementById('viz-container');
+const outWarn      = document.getElementById('out-of-range-warn');
 const sleeveInfo  = document.getElementById("sleeve-info");
 const measField   = document.getElementById("measurements-field");
 const measurementVisual = document.getElementById("measurement-visual");
@@ -1057,26 +1142,53 @@ function updateMeasurementVisual() {
 
   mvSubtitle.textContent = "";
 
-  const valid = type === "skinsuit" ? new Set(["chest"]) : new Set(["chest", "hips"]);
-
-  mvMeasures.innerHTML = Array.from(valid)
-    .map(key => {
-      const name = key === "height" ? t("chip.height")
-        : key === "chest" ? t("chip.chest")
-        : key === "waist" ? t("chip.waist")
-        : t("chip.hips");
-      return `<span class="mv-chip">${name}</span>`;
-    })
+  mvMeasures.innerHTML = [t("chip.chest"), t("chip.hips")]
+    .map(name => `<span class="mv-chip">${name}</span>`)
     .join("");
 }
 
 
+function renderSkinsuitInputs() {
+  const mkField = (id, nameAttr, labelKey, isRequired) => `
+    <div class="input-field">
+      <label for="${id}">${t(labelKey)}</label>
+      <div class="input-wrap ${isRequired ? "required" : "optional"}">
+        <span class="input-badge">${isRequired ? t("input.required") : t("input.optional")}</span>
+        <input type="number" id="${id}" name="${nameAttr}" min="1" step="0.1" ${isRequired ? "required" : ""} />
+        <span class="unit-suffix">cm</span>
+      </div>
+    </div>`;
+  grid.innerHTML =
+    `<div class="skinsuit-section-header">${t("skinsuit.section.upper")}</div>` +
+    mkField("m-chest", "chest", "field.chest", true) +
+    mkField("m-height", "height", "field.height", false) +
+    `<div class="skinsuit-section-header">${t("skinsuit.section.bottom")}</div>` +
+    mkField("m-hips", "hips", "field.hips", true);
+
+  grid.querySelectorAll(".input-wrap").forEach(wrap => {
+    const input = wrap.querySelector("input");
+    const sync = () => wrap.classList.toggle("has-value", input.value.trim() !== "");
+    sync();
+    input.addEventListener("input", sync);
+    input.addEventListener("change", sync);
+  });
+  resultBox.style.display = "none";
+}
+
 function renderInputs() {
-  const keys   = getFieldKeys();
   const type   = getVal("type");
   const gender = getVal("gender");
 
-  sleeveInfo.style.display  = type === "sleeves" ? "block" : "none";
+  sleeveInfo.style.display = type === "sleeves" ? "block" : "none";
+
+  if (type === "skinsuit") {
+    measField.style.display = "block";
+    updateMeasurementVisual();
+    renderSkinsuitInputs();
+    return;
+  }
+
+  const keys = getFieldKeys();
   measField.style.display   = (type === "sleeves" || keys.length === 0) ? "none" : "block";
   updateMeasurementVisual();
 
@@ -1120,19 +1232,26 @@ function renderInputs() {
 
 // ---- event listeners -----------------------------------------------------
 
+function setChildrenChipVisibility(visible) {
+  const gChildren = document.getElementById("g-children");
+  const gChildrenLabel = document.querySelector('label[for="g-children"]');
+  gChildren.disabled = !visible;
+  gChildren.classList.toggle("hidden", !visible);
+  gChildrenLabel.classList.toggle("hidden", !visible);
+}
+
 document.querySelectorAll('[name="type"], [name="gender"]').forEach(el => {
   el.addEventListener("change", () => {
     const type = getVal("type");
     const gender = getVal("gender");
-    const gChildren = document.getElementById("g-children");
 
     if (type === "skinsuit") {
-      gChildren.disabled = true;
+      setChildrenChipVisibility(false);
       if (gender === "children") {
         document.getElementById("g-men").checked = true;
       }
     } else {
-      gChildren.disabled = false;
+      setChildrenChipVisibility(true);
     }
     renderInputs();
   });
@@ -1210,6 +1329,63 @@ const VIZ = {
   gloves_adult:    [{s:'6',a:13.5,b:16.2},{s:'7',a:16.2,b:18.9},{s:'8',a:18.9,b:21.6},{s:'9',a:21.6,b:24.3},{s:'10',a:24.3,b:27}],
   shoe_covers: [{s:'35-36',a:35,b:36},{s:'37-39',a:37,b:39},{s:'40-42',a:40,b:42},{s:'43-45',a:43,b:45},{s:'46-48',a:46,b:48}],
 };
+
+// Skinsuit viz arrays: men's table filtered to max size 6
+const SKINSUIT_VIZ_CHEST = VIZ.men_combined.chest.filter(r => Number(String(r.s).replace('+','')) <= 6);
+const SKINSUIT_VIZ_HIPS  = VIZ.men_combined.hips.filter(r => Number(String(r.s).replace('+','')) <= 6);
+const SKINSUIT_STD_CHEST = VIZ.men_std.chest.filter(r => Number(r.s) <= 6);
+const SKINSUIT_STD_HIPS  = VIZ.men_std.hips.filter(r => Number(r.s) <= 6);
+
+function buildSkinsuitExtHeightViz(baseSize, heightValue, chosenSize) {
+  const round1 = v => Math.round(v * 10) / 10;
+  const stdRow = VIZ.men_std.height.find(r => r.s === String(baseSize));
+  const extRow = VIZ.men_ext.height.find(r => r.s === `${baseSize}+`);
+  if (!stdRow || !extRow) return null;
+  const cutoff = extRow.a > stdRow.b
+    ? round1(stdRow.b + (extRow.a - stdRow.b) / 3)
+    : extRow.a;
+  return {
+    rows: [{ s: String(baseSize), a: stdRow.a, b: cutoff }, { s: `${baseSize}+`, a: cutoff, b: extRow.b }],
+    value: heightValue,
+    unit: 'cm',
+    chosenSize,
+    vizOpenEndedTop: true,
+  };
+}
+
+function buildSkinsuitTopVizConfigs(skInput, chosenTopSize) {
+  const baseSize = String(chosenTopSize).replace('+', '');
+  const finalIsPlus = String(chosenTopSize).includes('+');
+  const cfgs = [{
+    rows: SKINSUIT_STD_CHEST,
+    value: skInput.chest,
+    unit: 'cm',
+    label: t('measurement.chest'),
+    chosenSize: baseSize,
+  }];
+  if (skInput.heightTop !== undefined && finalIsPlus) {
+    const viz = buildSkinsuitExtHeightViz(baseSize, skInput.heightTop, chosenTopSize);
+    if (viz) cfgs.push({ ...viz, label: t('measurement.height') + ' (' + t('skinsuit.result.topLabel').toLowerCase() + ')' });
+  }
+  return cfgs;
+}
+
+function buildSkinsuitBottomVizConfigs(skInput, chosenBottomSize) {
+  const baseSize = String(chosenBottomSize).replace('+', '');
+  const finalIsPlus = String(chosenBottomSize).includes('+');
+  const cfgs = [{
+    rows: SKINSUIT_STD_HIPS,
+    value: skInput.hips,
+    unit: 'cm',
+    label: t('measurement.hips'),
+    chosenSize: baseSize,
+  }];
+  if (skInput.heightBottom !== undefined && finalIsPlus) {
+    const viz = buildSkinsuitExtHeightViz(baseSize, skInput.heightBottom, chosenBottomSize);
+    if (viz) cfgs.push({ ...viz, label: t('measurement.height') + ' (' + t('skinsuit.result.bottomLabel').toLowerCase() + ')' });
+  }
+  return cfgs;
+}
 
 function getFinalVizConfig(input, chosenSize) {
   const { gender, type } = input;
@@ -1410,6 +1586,123 @@ function getSecondaryNoEffectMessage(input, chosenSize) {
   return '';
 }
 
+// ---- skinsuit submit -----------------------------------------------------
+
+function showSubmitError(message) {
+  resultBox.style.display = "block";
+  resultBox.className = "error";
+  resultSize.style.display = "";
+  resultSize.innerHTML = `<span class="size-num">${message}</span>`;
+  resultNote.textContent = t('result.invalidInput');
+  borderBadge.classList.add("hidden");
+  outWarn.classList.add("hidden");
+  finalVizContainer.innerHTML = "";
+  finalVizContainer.classList.add("hidden");
+  vizContainer.innerHTML = "";
+  vizContainer.classList.add("hidden");
+}
+
+function isOutsideCfg(c) {
+  if (c.value === undefined || !c.rows?.length) return false;
+  const min = Math.min(...c.rows.map(r => r.a));
+  const max = Math.max(...c.rows.map(r => r.b));
+  const plusOpenEndedHigh = !!c.vizOpenEndedTop && String(c.chosenSize ?? '').endsWith('+') && c.value > max;
+  if (plusOpenEndedHigh) return false;
+  return c.value < min || c.value > max;
+}
+
+function handleSkinsuitSubmit() {
+  const chestEl  = document.getElementById("m-chest");
+  const heightEl = document.getElementById("m-height");
+  const hipsEl   = document.getElementById("m-hips");
+
+  if (!chestEl?.value || !hipsEl?.value) {
+    showSubmitError(t('result.invalidInput'));
+    return;
+  }
+
+  const skInput = {
+    chest: Math.round(parseFloat(chestEl.value)),
+    hips:  Math.round(parseFloat(hipsEl.value)),
+  };
+  if (heightEl?.value) {
+    const h = Math.round(parseFloat(heightEl.value) * 10) / 10;
+    skInput.heightTop    = h;
+    skInput.heightBottom = h;
+  }
+
+  resultBox.className = "";
+
+  try {
+    const skResult = getSkinsuitSize(skInput);
+    resultBox.style.display = "block";
+    document.querySelector('#result .result-label').textContent = t('skinsuit.result.label');
+    borderBadge.classList.add("hidden");
+
+    if (skResult.result === 'contact_hotdesk') {
+      resultSize.style.display = "none";
+      resultNote.innerHTML = `
+        <div class="skinsuit-contact-hotdesk">
+          <div class="skinsuit-contact-hotdesk-title">${t('skinsuit.result.contactHotdeskTitle')}</div>
+          <div class="skinsuit-contact-hotdesk-text">${t('skinsuit.result.contactHotdesk')}</div>
+        </div>`;
+      outWarn.classList.add("hidden");
+      finalVizContainer.innerHTML = "";
+      finalVizContainer.classList.add("hidden");
+      vizContainer.innerHTML = "";
+      vizContainer.classList.add("hidden");
+    } else {
+      const { top, bottom } = skResult;
+      resultSize.style.display = "";
+      resultSize.innerHTML = `
+        <div class="skinsuit-sizes">
+          <div class="skinsuit-part">
+            <div class="skinsuit-part-label">${t('skinsuit.result.topLabel')}</div>
+            <div class="skinsuit-part-size">${formatSizeWithNameHtml(top.size)}</div>
+          </div>
+          <div class="skinsuit-part">
+            <div class="skinsuit-part-label">${t('skinsuit.result.bottomLabel')}</div>
+            <div class="skinsuit-part-size">${formatSizeWithNameHtml(bottom.size)}</div>
+          </div>
+        </div>`;
+
+      if (top.onBorder || bottom.onBorder) borderBadge.classList.remove("hidden");
+
+      resultNote.innerHTML =
+        `<div style="margin-bottom:6px"><strong>${t('skinsuit.result.topLabel')}:</strong> ${translateResultNote(top, 'skinsuit')}</div>` +
+        `<div><strong>${t('skinsuit.result.bottomLabel')}:</strong> ${translateResultNote(bottom, 'bottom')}</div>`;
+
+      const topVizCfgs = buildSkinsuitTopVizConfigs(skInput, top.size);
+      const botVizCfgs = buildSkinsuitBottomVizConfigs(skInput, bottom.size);
+      const allCfgs = [...topVizCfgs, ...botVizCfgs];
+
+      const anyOut = allCfgs.some(isOutsideCfg);
+      if (anyOut) {
+        const oob = allCfgs.find(isOutsideCfg);
+        outWarn.textContent = t('warn.outOfRange', { label: String(oob.label).toLowerCase(), value: oob.value, unit: oob.unit });
+        outWarn.classList.remove("hidden");
+      } else {
+        outWarn.classList.add("hidden");
+      }
+
+      const finalTopViz = buildFinalVizHtml(SKINSUIT_VIZ_CHEST, top.size,
+        t('skinsuit.result.topLabel') + ' \u2014 ' + t('viz.finalSize'), true);
+      const finalBotViz = buildFinalVizHtml(SKINSUIT_VIZ_HIPS, bottom.size,
+        t('skinsuit.result.bottomLabel') + ' \u2014 ' + t('viz.finalSize'), true);
+      finalVizContainer.innerHTML = finalTopViz + finalBotViz;
+      finalVizContainer.classList.toggle('hidden', !(finalTopViz || finalBotViz));
+
+      const vizHtml = allCfgs
+        .map(c => buildVizHtml(c.rows, c.value, c.chosenSize ?? top.size, c.unit, c.label, !!c.vizOpenEndedTop))
+        .join('');
+      vizContainer.innerHTML = vizHtml;
+      vizContainer.classList.toggle("hidden", !vizHtml);
+    }
+  } catch (err) {
+    showSubmitError(err.message);
+  }
+}
+
 // ---- submit --------------------------------------------------------------
 
 form.addEventListener("submit", e => {
@@ -1419,6 +1712,11 @@ form.addEventListener("submit", e => {
   const gender = getVal("gender");
 
   if (type === "sleeves") return;
+
+  if (type === "skinsuit") {
+    handleSkinsuitSubmit();
+    return;
+  }
 
   // Collect measurement values
   const input = { gender, type };
@@ -1438,7 +1736,7 @@ form.addEventListener("submit", e => {
   const calc = { ...input };
   ["chest", "waist", "height", "hips"].forEach(k => {
     if (calc[k] === undefined) return;
-    const isMenSecondaryTop = gender === "men" && (type === "top" || type === "skinsuit") && k === "height";
+    const isMenSecondaryTop = gender === "men" && type === "top" && k === "height";
     const isMenSecondaryBottom = gender === "men" && type === "bottom" && k === "height";
     if (isMenSecondaryTop || isMenSecondaryBottom) {
       calc[k] = Math.round(calc[k] * 10) / 10;
@@ -1451,14 +1749,13 @@ form.addEventListener("submit", e => {
   }
   if (calc.shoeSize !== undefined) calc.shoeSize = Math.round(calc.shoeSize);
 
-  const vizContainer = document.getElementById('viz-container');
-  const outWarn      = document.getElementById('out-of-range-warn');
-
   resultBox.className = "";
 
   try {
     const result = getSize(calc);
     resultBox.style.display = "block";
+    resultSize.style.display = "";
+    document.querySelector('#result .result-label').textContent = t('result.label');
     resultSize.innerHTML    = type === 'gloves'
       ? `<span class="size-num">${result.size}</span>`
       : formatSizeWithNameHtml(result.size);
@@ -1472,14 +1769,6 @@ form.addEventListener("submit", e => {
     // Out-of-range warning + proximity viz (using rounded values)
     const vizCfgs = getVizConfigs(calc, result.size);
     const finalCfg = getFinalVizConfig(calc, result.size);
-    const isOutsideCfg = c => {
-      if (c.value === undefined || !c.rows?.length) return false;
-      const min = Math.min(...c.rows.map(r => r.a));
-      const max = Math.max(...c.rows.map(r => r.b));
-      const plusOpenEndedHigh = !!c.vizOpenEndedTop && String(c.chosenSize ?? '').endsWith('+') && c.value > max;
-      if (plusOpenEndedHigh) return false;
-      return c.value < min || c.value > max;
-    };
 
     const anyOutside = vizCfgs.some(isOutsideCfg);
     if (anyOutside) {
@@ -1501,16 +1790,7 @@ form.addEventListener("submit", e => {
     vizContainer.innerHTML = vizHtml + extraMsgHtml;
     vizContainer.classList.toggle("hidden", !(vizHtml || extraMsgHtml));
   } catch (err) {
-    resultBox.style.display = "block";
-    resultBox.classList.add("error");
-    resultSize.textContent  = err.message;
-    resultNote.textContent  = t('result.invalidInput');
-    borderBadge.classList.add("hidden");
-    outWarn.classList.add("hidden");
-    finalVizContainer.innerHTML = "";
-    finalVizContainer.classList.add("hidden");
-    vizContainer.innerHTML = "";
-    vizContainer.classList.add("hidden");
+    showSubmitError(err.message);
   }
 });
 
@@ -1520,8 +1800,7 @@ async function initApp() {
   applyStaticTexts();
   bindLanguageSelector();
   if (getVal("type") === "skinsuit") {
-    const gChildren = document.getElementById("g-children");
-    gChildren.disabled = true;
+    setChildrenChipVisibility(false);
     if (getVal("gender") === "children") {
       document.getElementById("g-men").checked = true;
     }

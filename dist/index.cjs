@@ -20,7 +20,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  getSize: () => getSize
+  getSize: () => getSize,
+  getSkinsuitSize: () => getSkinsuitSize
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -388,6 +389,16 @@ function buildResult(size, onBorder, outOfRange, primaryMeasurement, isTop, exte
   }
   return { size, onBorder, note, noteKey, noteParams, noteExtraKey, noteExtraParams };
 }
+function getSizeNumeric(size) {
+  return parseInt(size.replace("+", ""), 10);
+}
+function getSkinsuitBottomSize(hips, height) {
+  const skinsuitRows = MEN_STANDARD.filter((r) => Number(r.size) <= 6);
+  const { row, onBorder, outOfRange } = matchRow(skinsuitRows, "hips", hips);
+  const mockInput = { gender: "men", type: "bottom", hips, height };
+  const extended = toExtendedMenSize(row, "bottom", mockInput);
+  return buildResult(extended.size, onBorder, outOfRange, "hips", false, extended.extendedReason);
+}
 function getSize(input) {
   const { gender, type } = input;
   if (type === "skinsuit" && gender === "children") {
@@ -407,7 +418,23 @@ function getSize(input) {
   }
   return getWomenSize(type, input);
 }
+function getSkinsuitSize(input) {
+  const topResult = getSize({
+    gender: "men",
+    type: "skinsuit",
+    chest: input.chest,
+    height: input.heightTop
+  });
+  const bottomResult = getSkinsuitBottomSize(input.hips, input.heightBottom);
+  const topNum = getSizeNumeric(topResult.size);
+  const bottomNum = getSizeNumeric(bottomResult.size);
+  if (Math.abs(topNum - bottomNum) > 1) {
+    return { result: "contact_hotdesk" };
+  }
+  return { result: "sizes", top: topResult, bottom: bottomResult };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  getSize
+  getSize,
+  getSkinsuitSize
 });

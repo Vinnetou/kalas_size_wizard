@@ -55,6 +55,32 @@ export interface SizeInput {
 }
 
 /**
+ * Input for skinsuit (kombinéza) sizing.
+ * Both genders use men's size tables, capped at size 6.
+ * Upper part is sized by chest; lower part by hips.
+ * Height for each part drives the extended (+) size selection.
+ */
+export interface SkinsuitInput {
+  /** Chest circumference in cm (upper part) */
+  chest: number;
+  /** Height in cm — for upper part extended size decision */
+  heightTop?: number;
+  /** Hip circumference in cm (lower part) */
+  hips: number;
+  /** Height in cm — for lower part extended size decision */
+  heightBottom?: number;
+}
+
+/**
+ * Result returned by getSkinsuitSize().
+ * When |topSizeNum − bottomSizeNum| > 1 the measurements fall outside any
+ * regular cut combination and the user must contact the Kalas hotdesk.
+ */
+export type SkinsuitSizeResult =
+  | { result: "sizes"; top: SizeResult; bottom: SizeResult }
+  | { result: "contact_hotdesk" };
+
+/**
  * Result returned by getSize().
  */
 export interface SizeResult {

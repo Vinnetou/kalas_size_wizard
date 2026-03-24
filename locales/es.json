@@ -62,5 +62,12 @@
   "result.gloves.border": "El contorno de mano {value} cm esta en el limite entre dos tallas de guantes. Se recomienda la talla mayor {size}.",
   "result.shoe.recommended": "Talla recomendada de cubrebotas / calcetines para talla EU {value}.",
   "result.shoe.outOfRange": "La talla EU {value} esta fuera del rango estandar. Talla mas cercana: {size}.",
-  "language.label": "Idioma"
+  "language.label": "Idioma",
+  "skinsuit.section.upper": "Parte superior (pecho)",
+  "skinsuit.section.bottom": "Parte inferior (culotte)",
+  "skinsuit.result.label": "Tallas de maillot entero recomendadas",
+  "skinsuit.result.topLabel": "Parte superior",
+  "skinsuit.result.bottomLabel": "Parte inferior",
+  "skinsuit.result.contactHotdeskTitle": "Medición personal requerida",
+  "skinsuit.result.contactHotdesk": "La talla está fuera de nuestra recomendación estándar. Para más información, contáctenos con sus medidas en info@kalas.cz"
 }

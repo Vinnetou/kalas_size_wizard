@@ -62,5 +62,12 @@
   "result.gloves.border": "Handomtrek {value} cm ligt op de grens tussen twee handschoenmaten. De grotere maat {size} wordt aanbevolen.",
   "result.shoe.recommended": "Aanbevolen overschoen-/sokmaat voor EU-schoenmaat {value}.",
   "result.shoe.outOfRange": "EU-schoenmaat {value} valt buiten het standaardbereik. Dichtstbijzijnde maat: {size}.",
-  "language.label": "Taal"
+  "language.label": "Taal",
+  "skinsuit.section.upper": "Bovenste deel (borst)",
+  "skinsuit.section.bottom": "Onderste deel (broek)",
+  "skinsuit.result.label": "Aanbevolen maten voor het pak",
+  "skinsuit.result.topLabel": "Bovenste deel",
+  "skinsuit.result.bottomLabel": "Onderste deel",
+  "skinsuit.result.contactHotdeskTitle": "Persoonlijke meting vereist",
+  "skinsuit.result.contactHotdesk": "De maat valt buiten onze standaardaanbeveling. Neem voor verduidelijking contact met ons op met uw maten via info@kalas.cz"
 }
